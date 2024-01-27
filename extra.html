@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../../CSS/nav2.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js" integrity="sha512-Y2IiVZeaBwXG1wSV7f13plqlmFOx8MdjuHyYFVoYzhyRr3nH/NMDjTBSswijzADdNzMyWNetbLMfOpIPl6Cv9g==" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../../CSS/footer.css">
+    <title>Beaches</title>
+    <script>
+    </script>
+    <style>
+
+        body{
+            background-color: rgb(163, 228, 248);
+        }
+        /* * {
+            text-align: justify;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        } */
+        
+        .col-md-4 {
+            margin-top: 2rem;
+        }
+        
+        .my-panel {
+            /* height: 85vh; */
+            overflow: hidden;
+            border: 1px solid rgb(218, 217, 217);
+            border-radius: 10px;
+            box-shadow: 2px 2px 5px 0px rgba(122, 185, 114, 0.75);
+            text-align: justify;
+            text-overflow: ellipsis;
+            padding: 1rem;
+        }
+        
+        .my-panel:hover {
+            box-shadow: 4px 3px 5px 0px rgba(86, 148, 83, 0.97);
+        }
+        /* .my-panel p {
+            margin: 0.7rem;
+        } */
+        
+        h4 {
+            color: #4caf50;
+            font-weight: bolder;
+        }
+        
+        .fa-star {
+            display: inline-flex;
+            align-items: center;
+            text-align: right;
+            justify-content: center;
+        }
+        
+        .checked {
+            color: orange;
+        }
+        
+        .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(119, 216, 119, 0.9);
+            overflow: auto;
+            width: 100%;
+            height: 100%;
+            transform: scale(0);
+            transition: .3s ease;
+            border-radius: 10px;
+        }
+        
+        .im:hover .overlay {
+            transform: scale(1);
+        }
+        
+        .text {
+            color: rgb(249, 252, 248);
+            font-size: 15px;
+            position: absolute;
+            top: 11%;
+            left: 10%;
+            transform: translate(-10%, -10%);
+            text-align: justify;
+            margin: 1rem 0 1rem 1rem;
+        }
+        
+        .im {
+            float: right;
+        }
+        
+        .book {
+            color: white;
+        }
+        
+        .book:hover {
+            text-decoration: none;
+            color: white;
+        }
+        
+        .type-destination {
+            text-align: center;
+            padding: 2rem;
+            font-weight: bolder;
+            color: rebeccapurple;
+            font-size: 32px;
+            text-shadow: rgb(83, 218, 228) 2px 2px 1px 2px;
+        }
+        
+        #intro {
+            text-align: justify;
+        }
+        
+        #choose-place {
+            font-size: 24px;
+            color: rgb(74, 236, 109);
+            text-align: center;
+            font-weight: bolder;
+        }
+        /* #fixing-width {
+            margin: auto rem;
+        } */
+    </style>
+</head>
+
+<body>
+    <div id="navigation"></div>
+    <script>
+        jQuery(document).ready(function($) {
+
+            $('#navigation').load("../nav2.html");
+
+        });
+    </script>
+    <div class="container" id="fixing-width">
+        <h2 class="type-destination">Beaches in India</h2>
+        <div class="row" id="intro">
+            <div class="col-xs-12">
+                <p>India having the longest stretch of coastline exhibits some serene beautiful beaches. Important beaches in and around Mumbai include the Juhu Beach, Manori Beach, Alibaug, Kashid beach, Murud Janjira, Harihareshwar beach, Ganpatipule,
+                    Tarkarli, etc. Famous beaches trending towards the north of Mumbai are Mandvi beach, Daman, Diu, Dumas beach, Somnath, etc. Chennai being the beach town of India exhibits the true beauty of Marina beach. Apart from the Marina Beach,
+                    there are also several beaches including Mahabalipuram, Tranquebar, Kovalam, Poompuhar and Kanyakumari. Pondicherry is well known for its beautiful Beaches and being proximate to both Bangalore and Chennai attracts a lot of tourist
+                    throughout the year. Kerala boasts of several exotic and beautiful beaches including Kovalam, Varkala, Kochi, Alappuzha, Bekal, Kozhikode, etc. whereas, the beaches in Goa are the ones that attract a large number of tourist every year.
+                    Laying behind beautiful and some of the most exotic and surreal beaches Andaman and Nicobar Islands remain unexplored and untouched by tourists.</p>
+            </div>
+        </div>
+        <h6 id="choose-place">Click on the Image to watch the video of your Dream Destination.</h6>
+        <div class="row">
+
+<!-- One -->
+            <div class="col-md-4">
+                <div class="my-panel">
+                    <div class="thumbnail">
+                        <a href="https://youtu.be/_xVc-_Rug6g" data-toggle="lightbox" data-gallery="youtubevideos">
+                            <img src="{{ url_for('static', filename='images/type/beaches/GOA.jpg') }}" style="width:100% ">
+                        </a>
+                        <div class="caption">
+                            <h4>Goa</h4>
+                            <p><span style="color: rgb(231, 125, 143);font-weight: bold;">Beaches and Crazy Nights</span>&emsp;&emsp;<span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <p id="description1">
+                        
+                    </p>
+
+                    
+                </div>
+            </div>
+
+<!-- two -->
+
+            <div class="col-md-4">
+                <div class="my-panel">
+                    <div class="thumbnail">
+                        <a href="https://youtu.be/CEEjzf044UU" data-toggle="lightbox" data-gallery="youtubevideos">
+                            <img src=" {{ url_for('static', filename='images/type/beaches/VARKALA.jpg') }} " style="width:100% ">
+                        </a>
+                        <div class="caption">
+                            <h4>Varkala, Kerala</h4>
+                            <p><span style="color: rgb(231, 125, 143);font-weight: bold;">Hidden treasure of Kerala</span>&emsp;&emsp;<span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <p id="description2">
+                        
+                    </p>
+
+                </div>
+            </div>
+
+      <!--     three   -->
+            <div class="col-md-4">
+                <div class="my-panel">
+                    <div class="thumbnail">
+                        <a href="https://youtu.be/Ws0pRN9htKo" data-toggle="lightbox" data-gallery="youtubevideos">
+                            <img src="{{ url_for('static', filename='images/type/beaches/GOKARNA.jpg') }} " style="width:100% ">
+                        </a>
+                        <div class="caption">
+                            <h4>Gokarna, Karnataka</h4>
+                            <p><span style="color: rgb(231, 125, 143);font-weight: bold;">Land of palm trees</span>&emsp;&emsp;<span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <p id="description3">
+                        
+                    </p>
+
+                    
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+
+
+    <div style="margin-bottom: 2rem;"></div>
+    <div id="foot"></div>
+
+    <script>
+        $(document).ready(function() {
+
+            $('#foot').load("../footer1.html");
+
+        });
+    </script>
+    <script>
+        $(document).on('click', '[data-toggle="lightbox"]', function(event) {
+            event.preventDefault();
+            $(this).ekkoLightbox();
+        });
+        var myDiv1 = $('#description1');
+        myDiv1.text(myDiv1.text().substring(0, 500) + "......");
+        var myDiv2 = $('#description2');
+        myDiv2.text(myDiv2.text().substring(0, 500) + "......");
+        var myDiv3 = $('#description3');
+        myDiv3.text(myDiv3.text().substring(0, 500) + "......");
+        var myDiv4 = $('#description4');
+        myDiv4.text(myDiv4.text().substring(0, 500) + "......");
+        var myDiv5 = $('#description5');
+        myDiv5.text(myDiv5.text().substring(0, 500) + "......");
+        var myDiv6 = $('#description6');
+        myDiv6.text(myDiv6.text().substring(0, 500) + "......");
+        var myDiv7 = $('#description7');
+        myDiv7.text(myDiv7.text().substring(0, 500) + "......");
+        var myDiv8 = $('#description8');
+        myDiv8.text(myDiv8.text().substring(0, 530) + "......");
+        var myDiv9 = $('#description9');
+        myDiv9.text(myDiv9.text().substring(0, 500) + "......");
+        var myDiv10 = $('#description10');
+        myDiv10.text(myDiv10.text().substring(0, 500) + "......");
+        var myDiv11 = $('#description11');
+        myDiv11.text(myDiv11.text().substring(0, 500) + "......");
+        var myDiv12 = $('#description12');
+        myDiv12.text(myDiv12.text().substring(0, 500) + "......");
+
+        
+    </script>
+</body>
+
+</html>

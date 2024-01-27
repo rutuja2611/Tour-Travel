@@ -1,0 +1,279 @@
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendation</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/recommend.css') }}">
+</head>
+<body>
+    <div class="wrapper">
+
+        <h1>Recommended Places to Visit in {{ city }}</h1>
+        
+        <div class="city-details">
+            <h2>{{ city }}</h2>
+            <p>Ideal Duration: {{ ideal_duration }}</p>
+            <p>Best Time to Visit: {{ best_time_to_visit }}</p>
+            <p>{{ city_desc | strip_brackets }}</p>
+        </div>
+
+        <h2>Top 5 Places to Visit:</h2>
+        <ul id="places-list">
+
+            {% for place in top_places %}
+
+                <li class="place-item">
+
+
+                    {% if place.image_url %}
+                        <img src="{{ place.image_url }}" alt="{{ place.Place }}">
+                    {% endif %}
+
+                    <div class="place-details">
+
+                        <strong>{{ place.Place | strip_numbers | strip_fullstop }}</strong><br>
+                        Ratings: {{ place.Ratings }}<br>
+                        Distance: {{ place.Distance }}<br>
+                        Place Description: {{ place.Place_desc | strip_brackets }}
+                        
+                    </div>
+
+                </li>
+
+
+            {% endfor %}
+
+        </ul>
+    
+    </div> -->
+
+
+
+
+    <!DOCTYPE html>
+    <html lang="en">
+    
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="../../CSS/nav2.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js" integrity="sha512-Y2IiVZeaBwXG1wSV7f13plqlmFOx8MdjuHyYFVoYzhyRr3nH/NMDjTBSswijzADdNzMyWNetbLMfOpIPl6Cv9g==" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="../../CSS/footer.css">
+        <title>Beaches</title>
+        <script>
+        </script>
+        <style>
+    
+            body{
+                background-color: rgb(163, 228, 248);
+            }
+            /* * {
+                text-align: justify;
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            } */
+            
+            .col-md-4 {
+                margin-top: 2rem;
+            }
+            
+            .my-panel {
+                /* height: 85vh; */
+                overflow: hidden;
+                border: 1px solid rgb(218, 217, 217);
+                border-radius: 10px;
+                box-shadow: 2px 2px 5px 0px rgba(122, 185, 114, 0.75);
+                text-align: justify;
+                text-overflow: ellipsis;
+                padding: 1rem;
+            }
+            
+            .my-panel:hover {
+                box-shadow: 4px 3px 5px 0px rgba(86, 148, 83, 0.97);
+            }
+            /* .my-panel p {
+                margin: 0.7rem;
+            } */
+            
+            h4 {
+                color: #4caf50;
+                font-weight: bolder;
+            }
+            
+            .fa-star {
+                display: inline-flex;
+                align-items: center;
+                text-align: right;
+                justify-content: center;
+            }
+            
+            .checked {
+                color: orange;
+            }
+            
+            .overlay {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: rgba(119, 216, 119, 0.9);
+                overflow: auto;
+                width: 100%;
+                height: 100%;
+                transform: scale(0);
+                transition: .3s ease;
+                border-radius: 10px;
+            }
+            
+            .im:hover .overlay {
+                transform: scale(1);
+            }
+            
+            .text {
+                color: rgb(249, 252, 248);
+                font-size: 15px;
+                position: absolute;
+                top: 11%;
+                left: 10%;
+                transform: translate(-10%, -10%);
+                text-align: justify;
+                margin: 1rem 0 1rem 1rem;
+            }
+            
+            .im {
+                float: right;
+            }
+            
+            .book {
+                color: white;
+            }
+            
+            .book:hover {
+                text-decoration: none;
+                color: white;
+            }
+            
+            .type-destination {
+                text-align: center;
+                padding: 2rem;
+                font-weight: bolder;
+                color: rebeccapurple;
+                font-size: 32px;
+                text-shadow: rgb(83, 218, 228) 2px 2px 1px 2px;
+            }
+            
+            #intro {
+                text-align: justify;
+            }
+            
+            #choose-place {
+                font-size: 24px;
+                color: rgb(74, 236, 109);
+                text-align: center;
+                font-weight: bolder;
+            }
+            /* #fixing-width {
+                margin: auto rem;
+            } */
+        </style>
+    </head>
+    
+    <body>
+        <div id="navigation"></div>
+        <div class="container" id="fixing-width">
+            <h2 class="type-destination">Recommended Places to Visit near You in {{ city }}</h2>
+            <div class="row" id="intro">
+                <div class="col-xs-12">
+                    <p>{{ city_desc | strip_brackets }}</p>
+                </div>
+            </div>
+            <h6 id="choose-place">Ideal Duration: {{ ideal_duration }}</h6>
+            <!-- <h6 id="choose-place">Best Time to Visit: {{ best_time_to_visit }}</h6> -->
+            <h2 class="type-destination">TOP RECOMMENDED PLACES</h2>
+
+
+
+            <div class="row">
+
+                {% for place in top_places %}
+    
+                <div class="col-md-4">
+                    <div class="my-panel">
+                        <div class="thumbnail">
+                            <a >
+                                <img src="{{ place.Images }}" alt="{{ place.Place }}">
+                            </a>
+                            <div class="caption">
+                                <h4>{{ place.Place | strip_numbers | strip_fullstop }}</h4>
+                                <p><span style="color: rgb(231, 125, 143);font-weight: bold;"> Ratings: {{ place.Ratings }}</span>&emsp;&emsp;</p>
+                                <p><span style="color: rgb(231, 125, 143);font-weight: bold;">Distance: {{ place.Distance }}</span>&emsp;&emsp;</p>
+                            </div>
+                        </div>
+                        <p id="description1">
+                            Place Description: {{ place.Place_desc | strip_brackets }}
+                        </p>
+    
+                        
+                    </div>
+                </div>
+
+                {% if loop.index % 3 == 0 %}
+                <div class="clearfix"></div>
+            {% endif %}
+    
+                {% endfor %}
+            </div>
+    
+    
+    
+    
+        </div>
+    
+    
+    
+    
+    </body>
+    
+    </html>
+
+
+
+
+  <!-- <img src=" https://images.unsplash.com/photo-1567870374047-3f9db5c06b16?q=80&w=2010&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script src="{{ url_for('static', filename='js/recommend.js') }}"></script>
+
+</body>
+</html>

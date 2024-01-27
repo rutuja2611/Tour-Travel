@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/outer.css') }}">
+    <title>Tourly - Travel agancy</title>
+
+    <!-- - favicon -->
+    <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body id="top">
+    <!--   - #HEADER-->
+
+    <header class="header" data-header>
+    <div class="overlay" data-overlay></div>
+
+      <div class="header-top">
+
+        <div class="container">
+
+          <a href="#" class="logo">SMART TRAVEL </a>
+          </div>
+        </div>
+
+
+    </header>
+
+    <main>
+        <!--#HERO-->
+        <section class="hero" id="home">
+          <div class="container">
+            <h2 class="h1 hero-title">ITS TIME TO SMART TRAVEL</h2>
+
+            <p class="hero-text">
+              <!-- Ac mi duis mollis. Sapiente? Scelerisque quae, penatibus? Suscipit
+              class corporis nostra rem quos voluptatibus habitant? Fames,
+              vivamus minim nemo enim, gravida lobortis quasi, eum. -->
+            </p>
+
+            <div class="btn-group">
+              <a class="btn btn-primary" href="{{ url_for('register') }}">Register now</a>
+              <!-- <button class="btn btn-primary"><a href="{{ url_for('register') }}"></a>REGISTER NOW!</button> -->
+
+              <!-- <button class="btn btn-secondary">LOGIN</button> -->
+              <a class="btn btn-secondary" class="url" href="{{ url_for('login') }}">Login</a>
+            </div>
+          </div>
+        </section>
+
+       <!--  - #POPULAR  -->
+        <!-- <section class="popular" id="destination">
+          <div class="container">
+            <p class="section-subtitle">Uncover place</p>
+
+            <h2 class="h2 section-title">Popular destination</h2>
+
+            <ul class="popular-list">
+              <li>
+                <div class="popular-card">
+                  <figure class="card-img">
+                    <img
+                      src="{{ url_for('static', filename='images/popular-1.jpg') }}"
+                      alt="San miguel, italy"
+                      loading="lazy"
+                    />
+                  </figure>
+
+                  <div class="card-content">
+                    <div class="card-rating">
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                    </div>
+
+                    <p class="card-subtitle">
+                      <a href="#">Italy</a>
+                    </p>
+
+                    <h3 class="h3 card-title">
+                      <a href="#">San miguel</a>
+                    </h3>
+
+                    <p class="card-text">
+                      Fusce hic augue velit wisi ips quibusdam pariatur, iusto.
+                    </p>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                <div class="popular-card">
+                  <figure class="card-img">
+                    <img
+                      src="{{ url_for('static', filename='images/popular-2.jpg') }}"
+                      alt="Burj khalifa, dubai"
+                      loading="lazy"
+                    />
+                  </figure>
+
+                  <div class="card-content">
+                    <div class="card-rating">
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                    </div>
+
+                    <p class="card-subtitle">
+                      <a href="#">Dubai</a>
+                    </p>
+
+                    <h3 class="h3 card-title">
+                      <a href="#">Burj khalifa</a>
+                    </h3>
+
+                    <p class="card-text">
+                      Fusce hic augue velit wisi ips quibusdam pariatur, iusto.
+                    </p>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                <div class="popular-card">
+                  <figure class="card-img">
+                    <img
+                      src="{{ url_for('static', filename='images/popular-2.jpg') }}"
+                      alt="Kyoto temple, japan"
+                      loading="lazy"
+                    />
+                  </figure>
+
+                  <div class="card-content">
+                    <div class="card-rating">
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                    </div>
+
+                    <p class="card-subtitle">
+                      <a href="#">Japan</a>
+                    </p>
+
+                    <h3 class="h3 card-title">
+                      <a href="#">Kyoto temple</a>
+                    </h3>
+
+                    <p class="card-text">
+                      Fusce hic augue velit wisi ips quibusdam pariatur, iusto.
+                    </p>
+                  </div>
+                </div>
+              </li>
+            </ul>
+
+          </div>
+        </section> -->
+
+        <!--  #GALLERY     -->
+        <!-- <section class="gallery" id="gallery">
+          <div class="container">
+            <p class="section-subtitle">Photo Gallery</p>
+
+            <h2 class="h2 section-title">Photo's From Travellers</h2>
+
+            <ul class="gallery-list">
+              <li class="gallery-item">
+                <figure class="gallery-image">
+                  <img
+                    src="{{ url_for('static', filename='images/gallery-1.jpg') }}"
+                    alt="Gallery image"
+                  />
+                </figure>
+              </li>
+
+              <li class="gallery-item">
+                <figure class="gallery-image">
+                  <img
+                    src="{{ url_for('static', filename='images/gallery-2.jpg') }}"
+                    alt="Gallery image"
+                  />
+                </figure>
+              </li>
+
+              <li class="gallery-item">
+                <figure class="gallery-image">
+                  <img
+                    src="{{ url_for('static', filename='images/gallery-3.jpg') }}"
+                    alt="Gallery image"
+                  />
+                </figure>
+              </li>
+
+              <li class="gallery-item">
+                <figure class="gallery-image">
+                  <img
+                    src="{{ url_for('static', filename='images/gallery-4.jpg') }}"
+                    alt="Gallery image"
+                  />
+                </figure>
+              </li>
+
+              <li class="gallery-item">
+                <figure class="gallery-image">
+                  <img
+                    src="{{ url_for('static', filename='images/gallery-5.jpg') }}"
+                    alt="Gallery image"
+                  />
+                </figure>
+              </li>
+            </ul>
+          </div>
+        </section> -->
+
+        </main>
+
+ 
+    <!-- - #FOOTER -->
+
+    <!-- <footer class="footer">
+
+      <div class="footer-bottom">
+        <div class="container">
+          <p class="copyright">
+            &copy; 2022 <a href="">codewithsadee</a>. All rights reserved
+          </p>
+
+          <ul class="footer-bottom-list">
+            <li>
+              <a href="#" class="footer-bottom-link">Privacy Policy</a>
+            </li>
+
+            <li>
+              <a href="#" class="footer-bottom-link">Term & Condition</a>
+            </li>
+
+            <li>
+              <a href="#" class="footer-bottom-link">FAQ</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </footer> -->
+
+    <!--   - custom js link-->
+    <script src="./assets/js/script.js"></script>
+
+    <!--   - ionicon link-->
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"
+    ></script>
+  </body>
+</html>

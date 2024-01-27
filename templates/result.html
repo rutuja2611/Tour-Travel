@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../../CSS/nav2.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js" integrity="sha512-Y2IiVZeaBwXG1wSV7f13plqlmFOx8MdjuHyYFVoYzhyRr3nH/NMDjTBSswijzADdNzMyWNetbLMfOpIPl6Cv9g==" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../../CSS/footer.css">
+    <title>Beaches</title>
+    <script>
+    </script>
+    <style>
+
+        body{
+            background-color: rgb(197, 225, 233);
+        }
+        /* * {
+            text-align: justify;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        } */
+        
+        .col-md-4 {
+            margin-top: 2rem;
+        }
+        
+        .my-panel {
+            /* height: 85vh; */
+            overflow: hidden;
+            border: 1px solid rgb(218, 217, 217);
+            border-radius: 10px;
+            box-shadow: 2px 2px 5px 0px rgba(122, 185, 114, 0.75);
+            text-align: justify;
+            text-overflow: ellipsis;
+            padding: 1rem;
+        }
+        
+        .my-panel:hover {
+            box-shadow: 4px 3px 5px 0px rgba(86, 148, 83, 0.97);
+        }
+        /* .my-panel p {
+            margin: 0.7rem;
+        } */
+        
+        h4 {
+            color: #4caf50;
+            font-weight: bolder;
+        }
+        
+        .fa-star {
+            display: inline-flex;
+            align-items: center;
+            text-align: right;
+            justify-content: center;
+        }
+        
+        .checked {
+            color: orange;
+        }
+        
+        .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(119, 216, 119, 0.9);
+            overflow: auto;
+            width: 100%;
+            height: 100%;
+            transform: scale(0);
+            transition: .3s ease;
+            border-radius: 10px;
+        }
+        
+        .im:hover .overlay {
+            transform: scale(1);
+        }
+        
+        .text {
+            color: rgb(249, 252, 248);
+            font-size: 15px;
+            position: absolute;
+            top: 11%;
+            left: 10%;
+            transform: translate(-10%, -10%);
+            text-align: justify;
+            margin: 1rem 0 1rem 1rem;
+        }
+        
+        .im {
+            float: right;
+        }
+        
+        .book {
+            color: white;
+        }
+        
+        .book:hover {
+            text-decoration: none;
+            color: white;
+        }
+        
+        .type-destination {
+            text-align: center;
+            padding: 2rem;
+            font-weight: bolder;
+            color: rebeccapurple;
+            font-size: 32px;
+            text-shadow: rgb(83, 218, 228) 2px 2px 1px 2px;
+        }
+        
+        #intro {
+            text-align: justify;
+        }
+        
+        #choose-place {
+            font-size: 24px;
+            color: rgb(74, 236, 109);
+            text-align: center;
+            font-weight: bolder;
+        }
+        /* #fixing-width {
+            margin: auto rem;
+        } */
+
+
+        .place-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* Change the number to limit the number of lines displayed */
+    -webkit-box-orient: vertical;
+    max-height: 10em; /* Adjust the max height based on your design */
+}
+
+    </style>
+</head>
+
+<body>
+    <div class="container" id="fixing-width">
+
+
+
+        <h2 class="type-destination">{{ state|upper }}, {{ city|upper }}</h2>
+
+        <div class="row" id="intro">
+            <div class="col-xs-12">
+                {% if city_desc %}<p>{{ city_desc | strip_brackets }}</p> {% endif %}
+            </div>
+
+        </div>
+
+        <h6 id="choose-place"> {% if best_time_to_visit %} Best Time to Visit: {{ best_time_to_visit }} {% endif %} </h6>
+
+        <h3 id="choose-place">TOP HOTELS AS PER YOUR REQUIREMENT</h3>
+
+
+
+
+        <div class="row">
+
+            
+                {% for hotel in hotels %}
+                <div class="col-md-4">
+                    <div class="my-panel">
+                        <div class="thumbnail">
+                            <a href="" data-toggle="lightbox" data-gallery="youtubevideos">
+                                <img src="{{ hotel.Image }}" style="width:100%;height:10%;">
+                            </a>
+                            <div class="caption">
+                                <h4>{{ hotel['Hotel_Name'] }}</h4>
+                                <p><span style="color: rgb(231, 125, 143);font-weight: bold; padding-bottom: -10px;"> Price: {{ hotel['Hotel_Price'] }}</span></p>
+                                <p><span style="color: rgb(231, 125, 143);font-weight: bold; padding-bottom: -10px;"> Rating: {{ hotel['Hotel_Rating'] }};</span></p>
+                                <p><span style="color: rgb(158, 98, 108);font-weight: bold;">Features: {{ hotel['Feature_1'] }}, {{ hotel['Feature_2'] }},{{
+                                    hotel['Feature_3'] }}, {{ hotel['Feature_4'] }},{{ hotel['Feature_5']
+                                    }},{{ hotel['Feature_6'] }},{{ hotel['Feature_7']}}{{
+                                    hotel['Feature_8']}},{{ hotel['Feature_9'] }} </span></p>
+                            </div>
+                        </div>
+                        <!-- <p id="description1">
+                            
+                        </p> -->
+                        
+                    </div>
+                </div>
+                {% if loop.index % 3 == 0 %}
+            <div class="clearfix"></div>
+        {% endif %}
+                {% endfor %}
+            
+       
+        </div>
+
+       
+
+
+
+    </div>
+
+    <div class="container">
+        
+        <div class="row">
+        
+            {% if top_places %}
+            
+            <h3 id="choose-place">TOP Places to visit in {{ city|upper }}</h3>
+            {% for place in top_places %}
+
+            
+            <div class="col-md-4">
+                <div class="my-panel">
+                    <div class="thumbnail">
+                        <a href="https://youtu.be/_xVc-_Rug6g" data-toggle="lightbox" data-gallery="youtubevideos">
+                            <img src="{{ place.Images }}" style="width:100% ">
+                        </a>
+                        <div class="caption">
+                            <h4>{{ place.Place | strip_numbers | strip_fullstop }}</h4>
+                            <p><span style="color: rgb(231, 125, 143);font-weight: bold; padding-bottom: -10px;"> Ratings: {{ place.Ratings }}</span></p>
+                            <p><span style="color: rgb(231, 125, 143);font-weight: bold; padding-bottom: -10px;"> Distance: {{ place.Distance }}</span></p>
+                            
+                        </div>
+                    </div>
+                    <p class="place-description" id="description1">
+                        {{ place.Place_desc }}
+                    </p>
+                    
+                </div>
+            </div>
+       
+            {% if loop.index % 3 == 0 %}
+            <div class="clearfix"></div>
+        {% endif %}
+              {% endfor %}
+           
+            {% endif %}
+        
+        </div>
+
+        </div>
+     
+
+
+
+
+
+</body>
+
+</html>

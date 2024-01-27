@@ -1,0 +1,18 @@
+<!-- this is for display of cities depending upon how many times user has clicked on the cities -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Attractions in {{ city }}</title>
+</head>
+<body>
+    <h1>Top Attractions in {{ city }}</h1>
+    
+    <ul>
+        {% for attraction in attractions %}
+            <li>{{ attraction.Place }} - Rating: {{ attraction.Ratings }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/outer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+    <title>Hotel Search</title>
+    <style>
+ h2{
+    margin-top: -50px;
+    text-align: center;
+}
+
+input{
+    border: 3px solid black;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    padding: 3px;
+}
+
+.cont{
+            height: 60%;
+            width: 40%;
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="b1">
+
+        <!-- header -->
+    <header class="header" data-header>
+        <div class="header-top">
+          <div class="container">
+            <a href="#" class="logo">SMART TRAVEL </a>
+            </div>
+          </div>
+      </header>
+
+  <!-- background  -->
+  <main>
+      <section class="hero" id="home">
+        <div class="container">
+        </div>
+      </section>
+  </main>
+
+<!-- form and img -->
+  <div class="cont">
+      <div class="image-container">
+        <img src="{{ url_for('static', filename='images/world.jpg') }}" alt="Image Description">
+      </div>
+      <div class="form-container">
+        <h2>Get Top Recommendations</h2>
+        <!-- <form action="/index" method="post">
+            <label for="city">City:</label>
+            <input type="text" name="city" required>
+            
+            <label for="cuisines">Cuisines:</label>
+            <input type="text" name="cuisines">
+    
+            <label for="min_rating">Minimum Rating (1-5):</label>
+            <input type="number" name="min_rating" min="1" max="5" step="0.1">
+            
+            <button type="submit">Search</button>
+        </form> -->
+
+
+
+        <form method="POST" action="{{ url_for('result') }}">
+          <label for="state">State:</label>
+          <input type="text" name="state" required>
+  
+          <label for="city">City:</label>
+          <input type="text" name="city" required>
+  
+          <label for="min_budget">Minimum Per Day Budget:</label>
+          <input type="number" name="min_budget" required>
+  
+          <label for="required_facility">Required Facility:</label>
+          <input type="text" name="required_facility" required>
+  
+          <button type="submit">Search</button>
+      </form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      </div>
+    </div>
+
+
+    </div>
+
+
+
+
+
+
+
+
+
+</body>
+</html>

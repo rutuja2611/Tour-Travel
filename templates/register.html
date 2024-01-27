@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/outer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+    <title>Register</title>
+</head>
+<body>
+
+    <div id="b1">
+
+        <!-- header -->
+    <header class="header" data-header>
+        <div class="header-top">
+          <div class="container">
+            <a href="#" class="logo">SMART TRAVEL </a>
+            </div>
+          </div>
+      </header>
+
+  <!-- background  -->
+  <main>
+      <section class="hero" id="home">
+        <div class="container">
+        </div>
+      </section>
+  </main>
+
+<!-- form and img -->
+  <div class="cont">
+      <div class="image-container">
+        <img src="{{ url_for('static', filename='images/beach.jpg') }}" alt="Image Description">
+      </div>
+      <div class="form-container">
+          <h2>Register Here!</h2>
+          <form action="/register" method="post">
+              <label for="username">Username:</label>
+              <input type="text" name="username" required>
+      
+              <label for="email">Email:</label>
+              <input type="email" name="email" required>
+      
+              <label for="country">Country:</label>
+              <input type="text" name="country" required>
+      
+              <label for="city">City:</label>
+              <input type="text" name="city" required>
+      
+              <label for="area_code">Area Code:</label>
+              <input type="text" name="area_code" required>
+      
+              <label for="password">Password:</label>
+              <input type="password" name="password" required>
+      
+              <label for="confirm_password">Confirm Password:</label>
+              <input type="password" name="confirm_password" required>
+      
+              <button type="submit">Register</button>
+          </form>
+          <p>Already registered? <a href="{{ url_for('login') }}">Login</a></p>
+          {% if error %}
+              <p class="error">{{ error }}</p>
+          {% endif %}
+      </div>
+    </div>
+
+
+    </div>
+
+    
+    
+</body>
+</html>

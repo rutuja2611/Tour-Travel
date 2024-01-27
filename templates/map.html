@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+    <meta charset = "UTF-8">
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1.0">
+    <meta name = "viewport" content = "initial-scale = 1,maximum-scale = 1,user-scalable = no" />
+    <link rel = "shortcut icon" type = "image/x-icon" href = "files/favicondk.png">
+
+<script src = 'https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+<link href = 'https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel = 'stylesheet'/>
+
+<!-- Here The Display Driving Direction Mapbox API -->  
+<script src = "https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.js"></script>
+<link rel = "stylesheet" href = "https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.css" type = "text/css"/>
+
+<title>MAPS</title>
+</head> 
+<link rel = "stylesheet" href = "{{ url_for('static', filename='css/map.css') }}">
+<body>
+    <div id = 'map' style = 'width: 100vw; height: 100vh;'></div>
+    <div class="map-overlay top"><div class="map-overlay-inner">
+
+    
+    <script src = "{{ url_for('static', filename='js/map.js') }}" defer></script>
+    
+</body>
+</html>

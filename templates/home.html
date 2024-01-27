@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRAVEL FRONTEND</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <a href="#" class="logo">Smart Travel</a>
+        <ul class="navbar">
+            <li> <a href="{{ url_for('index') }}"> Personalized Recommendation</a> </li>
+            <li> <a href="{{ url_for('map') }}" > Map</a> </li>
+            <li> <a href="{{ url_for('logout') }}">Log Out</a> </li>
+        </ul>
+    </header>
+
+    <!-- home section -->
+    <section class="home" id="home">
+                <div class="home-text">
+                    <div class="places">
+                            <a href="{{ url_for('beaches') }}">BEACHES</a>
+                            <a href="{{ url_for('hillstation') }}">HILL-STATIONS</a>
+                            <a href="{{ url_for('historical') }}">HISTORICAL PLACES</a>
+                            <a href="{{ url_for('parks') }}">PARKS</a></li>
+                            <a href="{{ url_for('religious') }}">RELIGIOUS PLACES</a>
+                            <a href="{{ url_for('honeymoon') }}">HONEYMOON DESTINATIONS</a>
+                    </div>
+            <h1>Experts at adventure</h1>
+            <p>Explore Places Near You</p>
+            <a href="{{ url_for('recommend') }}" class="home-btn">Click Here</a>
+        </div>
+    </section>
+
+    <h2>Cities you may like to visit</h2>
+    <ul>
+        {% for city, search_count in top_cities %}
+            <li><a href="{{ url_for('attractions', city=city) }}">{{ city }} ({{ search_count }} searches)</a></li>
+        {% endfor %}
+    </ul>
+    
+</body>
+</html>
