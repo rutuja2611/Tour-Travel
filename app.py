@@ -2,16 +2,17 @@ from flask import Flask, render_template, redirect, request, session, url_for
 import pandas as pd
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
-import requests
+# import requests
 from datetime import datetime
+from sqlalchemy import Numeric
 from sqlalchemy import func, desc  # Import func and desc from SQLAlchemy
-from flask_migrate import Migrate
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'  # Use SQLite for simplicity
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -22,39 +23,74 @@ class User(db.Model):
     area_code = db.Column(db.String(10), nullable=False)
     password = db.Column(db.String(60), nullable=False)
 
-
-
-# this is for attractions.html
-# Assuming you have a UserSearch model to track user searches
-class UserSearch(db.Model):
+class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    city = db.Column(db.String(50), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    # place_name = db.Column(db.String(100), nullable=False)
+    hotel_name = db.Column(db.String(100), nullable=False)
+    rating = db.Column(Numeric(precision=3, scale=1), nullable=False)
+    review_text = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Create a route to display top 10 attractions for a city
-@app.route("/attractions/<city>")
-def attractions(city):
-    # Retrieve attractions based on the selected city
-    city_attractions = places_df[places_df["City"].str.lower() == city.lower()].nlargest(10, 'Ratings')
-    return render_template("attractions.html", city=city, attractions=city_attractions.to_dict(orient="records"))
+    user = db.relationship('User', backref=db.backref('reviews', lazy=True))
+
+@app.route('/hotel/<string:hotel_name>/reviews', methods=['GET', 'POST'])
+def hotel_reviews(hotel_name):
+    hotel_reviews = Review.query.filter_by(hotel_name=hotel_name).order_by(desc(Review.created_at)).all()
+
+    if request.method == 'POST':
+        rating =float(request.form['rating'])
+        review_text = request.form['review_text']
+
+        new_review = Review(user_id=session['user_id'], hotel_name=hotel_name, rating=rating, review_text=review_text)
+        db.session.add(new_review)
+        db.session.commit()
+
+        # Redirect to the same page after submitting the review to refresh the reviews
+        return redirect(url_for('hotel_reviews', hotel_name=hotel_name))
+
+    return render_template('hotel_reviews.html', hotel_name=hotel_name, reviews=hotel_reviews)
+
+# Load the tourism data from Excel sheets
+places_df = pd.read_csv("Places.csv")
+city_df = pd.read_csv("City.csv")
+
+# Add this to your existing code
+class PlaceReview(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    place_name = db.Column(db.String(100), nullable=False)
+    rating = db.Column(Numeric(precision=3, scale=1), nullable=False)
+    review_text = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('place_reviews', lazy=True))
+
+# Add this to your existing code
+@app.route('/place/<string:place_name>/reviews', methods=['GET', 'POST'])
+def place_reviews(place_name):
+    place_reviews = PlaceReview.query.filter_by(place_name=place_name).order_by(desc(PlaceReview.created_at)).all()
+
+    if request.method == 'POST':
+        rating =float(request.form['rating'])
+        review_text = request.form['review_text']
+
+        new_review = PlaceReview(user_id=session['user_id'], place_name=place_name, rating=rating, review_text=review_text)
+        db.session.add(new_review)
+        db.session.commit()
+
+        # Redirect to the same page after submitting the review to refresh the reviews
+        return redirect(url_for('place_reviews', place_name=place_name))
+
+    return render_template('place_reviews.html', place_name=place_name, reviews=place_reviews)
+
 
 
 
 # Home page with taskbar
 @app.route('/home')
 def home():
-    # return render_template('home.html')
-    # Retrieve top 5 cities based on user searches
-    top_cities = (
-        db.session.query(UserSearch.city, func.count(UserSearch.city).label('search_count'))
-        .group_by(UserSearch.city)
-        .order_by(desc('search_count'))
-        .limit(5)
-        .all()
-    )
-
-    return render_template('home.html', top_cities=top_cities)
+     return render_template('home.html')
 
 @app.route('/beaches')
 def beaches():
@@ -155,10 +191,6 @@ def strip_brackets(value):
 def strip_fullstop(value):
     return value.replace('.', '')
 
-# Load the tourism data from Excel sheets
-places_df = pd.read_csv("Places.csv")
-city_df = pd.read_csv("City.csv")
-
 
 
 
@@ -236,8 +268,6 @@ def logout():
 
 
 
-
-
 # Load the datasets
 hotel_df = pd.read_csv("google_hotel.csv")
 cities_df = pd.read_csv("cities_in_india.csv")
@@ -253,10 +283,6 @@ def index():
 def result():
     if request.method == "POST":
 
-        # Track user search for attractions.html
-        # new_search = UserSearch(user_id=session['user_id'], city=city.lower())
-        # db.session.add(new_search)
-        # db.session.commit()
 
         # Get user inputs from the form
         state = request.form["state"].lower()
@@ -343,8 +369,8 @@ def result():
 )
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+# if __name__ == "__main__":
+#     app.run(debug=True)
 
 if __name__ == '__main__':
     with app.app_context():

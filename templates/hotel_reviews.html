@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Add your head content here -->
+</head>
+<body>
+    
+</body>
+</html>
+
+<div class="container">
+    <h2>{{ hotel_name }} Reviews</h2>
+
+    <!-- Display hotel information here -->
+
+    <div>
+        <h3>Write a Review</h3>
+        <form method="post" action="{{ url_for('hotel_reviews', hotel_name=hotel_name) }}">
+            <label for="rating">Rating:</label>
+            <input type="number" name="rating" min="1" max="5" step="0.1" required>
+            <br>
+            <label for="review_text">Review:</label>
+            <textarea name="review_text" rows="4" required></textarea>
+            <br>
+            <button type="submit">Submit Review</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <div>
+        <h3>Reviews</h3>
+        {% for review in reviews %}
+            <p>
+                <strong>{{ review.user.username }}</strong> rated it {{ review.rating }}/5
+                <br>
+                {{ review.review_text }}
+                <br>
+                {{ review.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+            </p>
+            <hr>
+        {% endfor %}
+    </div>
+</div>
