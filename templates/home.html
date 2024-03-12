@@ -37,13 +37,20 @@
             <a href="{{ url_for('recommend') }}" class="home-btn">Click Here</a>
         </div>
     </section>
-
-    <!-- <h2>Cities you may like to visit</h2>
+    
+    <h1>Recommended Hotels</h1>
     <ul>
-        {% for city, search_count in top_cities %}
-            <li><a href="{{ url_for('attractions', city=city) }}">{{ city }} ({{ search_count }} searches)</a></li>
+        {% for hotel in hotel_recommendations %}
+            <li>{{ hotel.name }} - Rating: {{ hotel.rating }}</li>
         {% endfor %}
-    </ul> -->
+    </ul>
+
+    <h1>Recommended Attractions</h1>
+    <ul>
+        {% for attraction in attraction_recommendations %}
+            <li>{{ attraction.name }} - Rating: {{ attraction.rating }}</li>
+        {% endfor %}
+    </ul>
     
 </body>
 </html>

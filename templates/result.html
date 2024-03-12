@@ -287,5 +287,31 @@
         {% endif %} {% endfor %} {% endif %}
       </div>
     </div>
+
+    <div class="container">
+
+<!-- Add this section after the hotels and places loops -->
+<h3 id="choose-place">City Reviews for {{ city|upper }}</h3>
+
+
+<form method="POST" action="{{ url_for('add_city_reviews', city=city) }}">
+
+  <label for="rating">Rating:</label>
+  <input type="number" step="0.1" min="1" max="5" name="rating" required>
+
+  <label for="review_text">Review:</label>
+  <textarea name="review_text" rows="4" required></textarea>
+
+  <button type="submit" class="btn btn-primary">Submit Review</button>
+</form>
+
+<!-- Update the button to link to the new view_city_reviews route -->
+<a href="{{ url_for('view_city_reviews', city=city) }}" class="btn btn-info">View Reviews</a>
+
+
+</div>
+
+
+    </div>
   </body>
 </html>

@@ -93,6 +93,47 @@
 
 
 
+# clickcount
+
+
+# database for click-->WORKS-->MAYBE NEED TO DELETE
+# class Clickcount(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+#     user = db.relationship('User', backref=db.backref('clickcount', uselist=False))
+#     numb = db.Column(db.Integer, default=0)
+
+
+          # Retrieve the user
+        #   user = User.query.filter_by(id=session['user_id']).first()
+        #   if user:
+        #     click_count = Clickcount.query.filter_by(user_id=user.id).first()
+        #     if click_count:
+        #         # If numb is 0, increase the count in City.csv
+        #         if click_count.numb == 0:
+
+        #             # Increment the Count column for the searched city
+        #             searched_city = city_info_df["City"].str.lower() == city
+        #             #   city_info_df.loc[searched_city, "Count"] += 1
+        #             city_info_df.loc[searched_city, "Count"] = city_info_df.loc[searched_city, "Count"].apply(lambda x: 1 if pd.isna(x) else x + 1)
+        #             # Print the DataFrame before and after the modification
+        #             print("Before modification:")
+        #             print(city_info_df[searched_city])
+
+        #             # Save the updated DataFrame back to City.csv
+        #             city_info_df.to_csv("City.csv", index=False)
+        #             print("After saving:")
+        #             print(pd.read_csv("City.csv")[searched_city])
+        #             # Print the current value of the Count column for the searched city again
+        #             print(f"Updated Count for {city}: {pd.read_csv('City.csv').loc[searched_city, 'Count'].values}")
+
+        #             # Update numb to 1
+        #             click_count.numb = 1
+        #             db.session.commit()
+        #         else:
+        #             print("Count already updated for this user.")
+
+
 
 
 
