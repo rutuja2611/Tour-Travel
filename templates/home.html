@@ -37,20 +37,37 @@
             <a href="{{ url_for('recommend') }}" class="home-btn">Click Here</a>
         </div>
     </section>
-    
-    <h1>Recommended Hotels</h1>
-    <ul>
-        {% for hotel in hotel_recommendations %}
-            <li>{{ hotel.name }} - Rating: {{ hotel.rating }}</li>
-        {% endfor %}
-    </ul>
 
-    <h1>Recommended Attractions</h1>
+
+
+    <h1>Hotel Recommendation using content based filt</h1>
+    <h2>Last Rated Hotel: {{ last_rated_hotel }}</h2>
+    <hr>
+    {% if recommendations %}
+    <h2>Recommendations</h2>
     <ul>
-        {% for attraction in attraction_recommendations %}
-            <li>{{ attraction.name }} - Rating: {{ attraction.rating }}</li>
+        {% for recommendation in recommendations %}
+        <li>
+            <h3>{{ recommendation['Hotel_Name'] }}</h3>
+            <p>City: {{ recommendation['City'] }}</p>
+            <!-- Add more hotel information here as needed -->
+        </li>
         {% endfor %}
     </ul>
+    {% else %}
+    <p>No recommendations available.</p>
+    {% endif %}
     
+    <h1>Top Hotel Recommendations using collab</h1>
+<!-- Add this code snippet in your home.html -->
+<!-- Add this code snippet in your home.html -->
+<h2>Top Recommendations</h2>
+<ul>
+  {% for hotel in top_recommendations %}
+    <li>{{ hotel }}</li>
+  {% endfor %}
+</ul>
+
+
 </body>
 </html>
