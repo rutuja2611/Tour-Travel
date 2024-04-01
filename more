@@ -198,3 +198,76 @@
 #     filtered_df = filtered_df.sort_values(by='rating', ascending=False)
 
 #     return filtered_df
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# arya friends code
+
+
+
+
+# def calculate_user_item_hotel_similarity(user_feature_vector, hotel_df_encoded, hotel_features_combined):
+
+#     # Convert user_feature_vector to numpy array
+#     user_vector = np.array([v for v in user_feature_vector.values()]).reshape(1, -1)
+    
+#     # Convert hotel_features_combined to numpy array
+#     hotel_vectors = np.array([v for v in hotel_features_combined.values()])
+
+#     # Check if shapes are compatible
+#     if user_vector.shape[1] != hotel_vectors.shape[1]:
+#         raise ValueError("User feature vector and hotel feature vectors have incompatible shapes.")
+
+#     # Calculate cosine similarity between user and each hotel
+#     similarities = cosine_similarity(user_vector, hotel_vectors)
+
+#     # Create a dictionary to store hotel IDs and their corresponding similarity scores
+#     hotel_similarity = {hotel_id: similarity[0] for hotel_id, similarity in zip(hotel_df_encoded.index, similarities)}
+
+#     return hotel_similarity
+
+
+
+
+# def calculate_user_item_hotel_similarity(user_feature_vector, hotel_df_encoded, hotel_features_combined):
+
+#     # Convert user_feature_vector to numpy array
+#     print(user_feature_vector)
+#     print(hotel_features_combined)
+#     user_vector = np.array(list(user_feature_vector.values()))
+    
+#     # Convert hotel_features_combined DataFrame to numpy array
+#     hotel_vectors = hotel_features_combined.values
+
+#     # Check the shapes of user_vector and hotel_vectors
+#     print("User vector shape:", user_vector.shape)
+#     print("Hotel vectors shape:", hotel_vectors.shape)
+
+#     # Calculate cosine similarity between user and each hotel
+#     similarities = cosine_similarity(user_vector, hotel_vectors)
+
+#     # Create a dictionary to store hotel IDs and their corresponding similarity scores
+#     hotel_similarity = {hotel_id: similarity[0] for hotel_id, similarity in zip(hotel_df_encoded.index, similarities)}
+
+#     return hotel_similarity

@@ -12,6 +12,9 @@ from flask import Flask
 from flask_login import LoginManager, login_required, UserMixin, current_user
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import OneHotEncoder
+from collections import defaultdict
+from flask import session
 
 
 app = Flask(__name__)
@@ -553,239 +556,518 @@ def delete_review(review_id):
 
 
 
-# collaborative and content based filtering
-@app.route('/home_recommend')
-def home_recommend():
-    # Data Cleaning and Preprocessing for Hotel Data
-    # Drop rows with missing values in any column except 'Image'
-    hotel_df_cleaned = hotel_df.dropna(subset=[col for col in hotel_df.columns if col != 'Image'])
-    hotel_df_cleaned['Hotel_Rating'] = hotel_df_cleaned['Hotel_Rating'].astype(float)
-
-    # Data Cleaning and Preprocessing for Attraction Data
-    # Drop rows with missing values in any column except 'Image' for places_df
-    places_df_cleaned = places_df.dropna(subset=[col for col in places_df.columns if col != 'Images'])
-    places_df_cleaned['Ratings'] = places_df_cleaned['Ratings'].astype(float)
-
-    # Convert city names to lowercase
-    hotel_df_cleaned['City'] = hotel_df_cleaned['City'].str.lower()
-    places_df_cleaned['City'] = places_df_cleaned['City'].str.lower()
-
-    # Feature Encoding for Hotel Data (One-Hot Encoding for City)
-    hotel_df_encoded = pd.get_dummies(hotel_df_cleaned, columns=['City'])
-
-    # Feature Encoding for Attraction Data (One-Hot Encoding for City)
-    places_df_encoded = pd.get_dummies(places_df_cleaned, columns=['City'])
-
-    # Min-Max Scaling for Hotel Price
-    scaler = MinMaxScaler()
-    hotel_df_encoded['Hotel_Price'] = scaler.fit_transform(hotel_df_encoded[['Hotel_Price']])
-
-     # Feature Extraction for Hotel features
-    hotel_features = hotel_df_cleaned[['Feature_1', 'Feature_2', 'Feature_3', 'Feature_4', 'Feature_5', 'Feature_6', 'Feature_7', 'Feature_8', 'Feature_9']]
-
-    # this consider only features
-    hotel_feature_vector = pd.get_dummies(hotel_features)
-
-    # Feature Extraction for Attraction description
-    attraction_feature_vector = pd.get_dummies(places_df_cleaned['Place_desc'])
-
-    user_id = int(session.get('user_id'))
-    user = db.session.query(User).get(user_id)
-    age = user.age
-    gender = user.gender
-
-    # Retrieve all search preferences of the user from the database
-    user_queries = None
-    user_queries = SearchQuery.query.filter_by(user_id = session.get('user_id')).all()   
-
-    # Proceed if user_queries exist
-    if user_queries:
-        # Initialize lists to store search preferences
-        states = []
-        cities = []
-        min_budgets = []
-        required_facilities = []
-
-        # Extract search preferences from user_queries
-        for query in user_queries:
-            states.append(query.state)
-            cities.append(query.city)
-            min_budgets.append(query.min_budget)
-            required_facilities.append(query.required_facility)
-
-
-    # Retrieve user ratings for cities  
-    city_ratings = CityReview.query.filter_by(user_id=user_id).with_entities(CityReview.city, CityReview.rating).all()
-
-
-    # Retrieve user ratings for hotels
-    hotel_ratings = Review.query.filter_by(user_id=user_id).with_entities(Review.hotel_name, Review.rating).all()
-
-    # Retrieve user ratings for attractions
-    attraction_ratings = PlaceReview.query.filter_by(user_id=user_id).with_entities(PlaceReview.place_name, PlaceReview.rating).all()        
-
-    # Proceed with creating user feature vector using demographic information and all search preferences
-    user_feature_vector = create_user_feature_vector(age, gender, states, cities, min_budgets, required_facilities, city_ratings, hotel_ratings, attraction_ratings)
-
-
-    #combine all features of hotel-> final hotel feature vector
-    city_columns = hotel_df_encoded.filter(like='City_').columns
-    hotel_features_combined = pd.concat([hotel_df_encoded[city_columns], hotel_df_encoded[['Hotel_Rating', 'Hotel_Price']], hotel_feature_vector], axis=1)
-      # did nto understand below step
-    hotel_features_combined.fillna(hotel_features_combined.mean(), inplace=True)
-
-
-    #combine all the features of attractions-->final attraction feature vector
-    city_columns = places_df_encoded.filter(like='City_').columns
-    attraction_features_combined = pd.concat([places_df_encoded[city_columns], places_df_encoded[['Ratings']], attraction_feature_vector], axis=1)
-    # did nto understand below step
-    attraction_features_combined.fillna(attraction_features_combined.mean(), inplace=True)
 
 
 
-    #content based filtering--> calculating similarities betwwen item-item and user-item to provide recommendations
 
-    #similarity matrix item-item similarity
-    hotel_similarity_matrix,attraction_similarity_matrix = calculate_item_item_similarity(hotel_features_combined,attraction_features_combined)
 
-    # user-item similairty
-    user_item_hotel_similarity = calculate_user_item_hotel_similarity(user_feature_vector,hotel_df_encoded, hotel_features_combined)
-    user_attraction_similarity = calculate_user_item_attractions_similarity(user_feature_vector, places_df_encoded, attraction_features_combined)
 
-    # Collaborative Filtering
-    hotel_cf_recommendations = collaborative_filtering_hotel_recommendation(user_id, hotel_df_encoded, hotel_similarity_matrix)
-    attraction_cf_recommendations = collaborative_filtering_attractions_recommendation(user_id, places_df_encoded, attraction_similarity_matrix)
+
+# gemini
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# from scipy.sparse import hstack
+
+# # Load hotel and attraction data (replace with your actual loading logic)
+
+# hotels_df = pd.read_csv("hot.csv")
+# hotels_df.fillna("", inplace=True)
+
+# # print("Dataype of hotels infor is:",hotels_df.dtypes)
+# # missing_values = hotels_df.isnull().sum()
+# # print(missing_values[missing_values > 0])  # Print columns with missing values
+
+# attractions_df = pd.read_csv("att.csv")
+# attractions_df.fillna("", inplace=True) 
+# attractions_df["Place_desc"].fillna("", inplace=True)  # Replace NaN values with empty strings
+
+
+# # Function to preprocess text data (e.g., hotel descriptions, attraction details)
+# def preprocess_text(text):
+#     # Apply text cleaning steps here (e.g., lowercase, remove punctuation, stopwords)
+#     if isinstance(text, str):
+#         return text.lower().strip()
+#     else:
+#         return text    
+
+# # Preprocess hotel and attraction descriptions
+# hotels_df["Hotel_Name"] = hotels_df["Hotel_Name"].apply(preprocess_text)
+# hotels_df["City"] = hotels_df["City"].apply(preprocess_text)
+# hotels_df["Feature_1"] = hotels_df["Feature_1"].apply(preprocess_text)
+# hotels_df["Feature_2"] = hotels_df["Feature_2"].apply(preprocess_text)
+# hotels_df["Feature_3"] = hotels_df["Feature_3"].apply(preprocess_text)
+# hotels_df["Feature_4"] = hotels_df["Feature_4"].apply(preprocess_text)
+# hotels_df["Feature_5"] = hotels_df["Feature_5"].apply(preprocess_text)
+# hotels_df["Feature_6"] = hotels_df["Feature_6"].apply(preprocess_text)
+# hotels_df["Feature_7"] = hotels_df["Feature_7"].apply(preprocess_text)
+# hotels_df["Feature_8"] = hotels_df["Feature_8"].apply(preprocess_text)
+# hotels_df["Feature_9"] = hotels_df["Feature_9"].apply(preprocess_text)
+# attractions_df["City"] = attractions_df["City"].apply(preprocess_text)
+# attractions_df["Place_desc"] = attractions_df["Place_desc"].apply(preprocess_text)
+
+# hotels_df_unique = hotels_df.groupby('City').first().reset_index()
+# print(hotels_df_unique)
+# # Create TF-IDF vectors for hotel and attraction descriptions
+# # Assuming preprocessed text is stored in separate columns
+
+# hotel_vectorizer = TfidfVectorizer(max_features=1000)
+# hotel_text_features = ["Hotel_Name", "City"] + ["Feature_" + str(i) for i in range(1, 10)]
+# hotels_df[hotel_text_features[1:]] = hotels_df[hotel_text_features[1:]].astype(str).map(preprocess_text)
+
+# for col in hotel_text_features:
+#     hotels_df[col] = hotels_df[col].fillna("").astype(str).apply(preprocess_text)
+
+# hotels_df_unique = hotels_df.groupby('City').first().reset_index()
+# hotels_df['combined_feat'] = hotels_df.apply(lambda row: ' '.join(row[['Feature_1', 'Feature_2', 'Feature_3', 'Feature_4', 'Feature_5', 'Feature_6', 'Feature_7', 'Feature_8', 'Feature_9']]), axis=1)
+# print("Combined Features:")
+# print(hotels_df['combined_feat'])
+
+# hotel_features_matrix = pd.DataFrame()
+
+# # Assuming you decide on a max_length of 100 words
+# max_len = 100
+# hotels_df[hotel_text_features] = hotels_df[hotel_text_features].apply(lambda x: x[:max_len] if len(x) > max_len else x.str.pad(max_len))
+
+
+# for feature in hotel_text_features:
+#     try:
+#         print("Processing feature:", feature)
+#         sparse_matrix = hotel_vectorizer.fit_transform(hotels_df[feature])
+#         dense_array = sparse_matrix.toarray()
+#         print("hotels_df shape:", hotels_df.shape)
+#         print(f"Shape of dense_array for feature '{feature}':", dense_array.shape)    
+#         hotel_features_matrix[feature] = dense_array.ravel()  # Reshape to 1D
+#     except ValueError as e:
+#         print("Error encountered for feature:", feature)
+#         print(e)
+#         # print(hotels_df[feature].head())  # Print a sample of values
+#         # print(hotels_df[feature].isnull().sum())  # Check for missing values
+#         # print(hotels_df[feature].dtype)  # Verify data type
+
+
+# # Concatenate features into a single string (optional)
+# hotels_df["combined_features"] = hotels_df[hotel_text_features].apply(lambda x: ' '.join(x), axis=1)
+# combined_features_matrix = hotel_vectorizer.fit_transform(hotels_df["combined_features"])
+
+
+# attractions_df["City"] = attractions_df["City"].fillna("").astype(str).apply(preprocess_text)
+# attractions_df["Place_desc"] = attractions_df["Place_desc"].fillna("").astype(str).apply(preprocess_text)
+# attraction_vectorizer = TfidfVectorizer(max_features=1000)  # Adjust max_features as needed
+# attraction_text_features = ["City", "Place_desc"]
+
+# attraction_features_matrix = attraction_vectorizer.fit_transform(attractions_df[attraction_text_features])
+
+
+
+
+
+
+
+
+
+# def create_user_profile_vector(user_id):
+#     # Fetch user data from database models
+#     user_data = User.query.filter_by(id=user_id).first()
+#     user_search_query = SearchQuery.query.filter_by(user_id=user_id).first()
+
+#     user_profile = {}
+
+#     # Extract relevant features from user_data and user_search_query
+#     # Convert categorical features to numerical representations if needed
+
+#     # Basic features from User model:
+#     if user_data.age is not None:
+#         user_profile["age"] = user_data.age
+#     if user_data.gender is not None:
+#         # Consider one-hot encoding or label encoding for gender
+#         user_profile["gender"] = user_data.gender
+#     # ... (add other relevant features from User model)
+
+#     # Features from SearchQuery model:
+#     if user_search_query is not None:
+#         user_profile["city"] = user_search_query.city
+#         user_profile["required_facilitiy"] = user_search_query.required_facility.split(",")  # Assuming facilities are comma-separated
+
+#     # One-hot encode categorical features (replace with your chosen features)
+#     categorical_features = ['gender']  # Adjust as needed
+#     categorical_features_search = ['city','required_facility'] 
+
+#     encoder = OneHotEncoder()
+
+#     encoded_data = encoder.fit_transform([[getattr(user_data, feat) for feat in categorical_features]])
+#     encoded_data_search = encoder.fit_transform([[getattr(user_search_query, feat) for feat in categorical_features_search]])
+
+#     # Merge the encoded sparse matrices horizontally
+#     user_profile_encoded = hstack([encoded_data, encoded_data_search])
+
+#     user_profile["encoded_features"] = user_profile_encoded
+
+#     print("User profile is:",user_profile)
+#     return user_profile
+
+
+# def generate_recommendations(user_profile, hotels_df, attractions_df, k=5):
+#     # Calculate cosine similarity between user profile and hotels/attractions
+#     hotel_similarities = cosine_similarity(user_profile["encoded_features"], hotel_features_matrix)
+#     attraction_similarities = cosine_similarity(user_profile["encoded_features"], attraction_features_matrix)
+
+#     # Combine similarities if needed for a hybrid approach
+#     # ... (implementation for merging scores)
+
+#     # Get indices of top k most similar hotels and attractions
+#     top_k_hotel_indices = hotel_similarities.argsort()[-k:][::-1]
+#     top_k_attraction_indices = attraction_similarities.argsort()[-k:][::-1]
+
+#     # Retrieve recommended items from the DataFrames
+#     recommended_hotels = hotels_df.iloc[top_k_hotel_indices]
+#     recommended_attractions = attractions_df.iloc[top_k_attraction_indices]
+
+#     return recommended_hotels, recommended_attractions
+
+# @app.route('/example')
+# def example_route():
+#     user_id = session.get('user_id')
+#     user_profile = create_user_profile_vector(user_id)
+#     # Generate recommendations
+#     recommended_hotels, recommended_attractions = generate_recommendations(user_profile, hotels_df, attractions_df)
+
+#     # Pass recommendations to the template for display    
+#     return render_template('home.html', recommended_hotels=recommended_hotels, recommended_attractions=recommended_attractions)
+
+
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.sparse import hstack
+from sklearn.preprocessing import MultiLabelBinarizer
+import pandas as pd
+from scipy import sparse as sp
+
+
+# Load hotel data
+hotels_df = pd.read_csv("hot.csv")
+hotels_df.fillna("", inplace=True)
+
+# Function to preprocess text data
+def preprocess_text(text):
+    if isinstance(text, str):
+        return text.lower().strip()
+    else:
+        return text    
+
+# Preprocess hotel data
+for col in hotels_df.columns:
+    hotels_df[col] = hotels_df[col].apply(preprocess_text)
+
+# Group by City and combine features into a single column
+hotels_df['combined_feat'] = hotels_df.apply(lambda row: ' '.join(row[['Feature_1', 'Feature_2', 'Feature_3', 'Feature_4', 'Feature_5', 'Feature_6', 'Feature_7', 'Feature_8', 'Feature_9']]), axis=1)
+hotels_df_grouped = hotels_df.groupby('City').first().reset_index()
+
+# Create TF-IDF vectors for combined features
+vectorizer = TfidfVectorizer(max_features=1000)
+hotel_features_matrix = vectorizer.fit_transform(hotels_df_grouped['combined_feat'])
+
+from scipy.sparse import hstack, vstack
+
+def create_user_profile_vector(user_id):
+    # Fetch user data from database models
+    user_data = User.query.filter_by(id=user_id).first()
+    user_search_queries = SearchQuery.query.filter_by(user_id=user_id).all()  # Fetch all search queries for the user
+
+    user_profile = {}
+
+    # Extract relevant features from user_data and user_search_queries
+    # Basic features from User model:
+    if user_data:
+        if user_data.age is not None:
+            user_profile["age"] = user_data.age
+        if user_data.gender is not None:
+            user_profile["gender"] = user_data.gender
+
+    # Features from SearchQuery model:
+    cities = []
+    facilities = []
+    for search_query in user_search_queries:
+        cities.append(search_query.city)
+        if search_query.required_facility:
+            facilities.extend(search_query.required_facility.split(","))
+            
+    user_profile["city"] = cities
+
+    # One-hot encode categorical features
+    categorical_features = ['gender']  # Adjust as needed
+    encoder = OneHotEncoder()
+
+    encoded_data = encoder.fit_transform([[user_profile.get(feat, None)] for feat in categorical_features])
     
+    # Convert required_facility to binary features
+    mlb = MultiLabelBinarizer()
+    facilities_binary = mlb.fit_transform([[facility] for facility in facilities])
+    user_profile["required_facility_binary"] = facilities_binary
 
-    # Render the home.html template with the recommendation results
-    return render_template('home.html', hotel_recommendations=hotel_cf_recommendations, attraction_recommendations=attraction_cf_recommendations)
-            # , recommendation_results=recommendation_results
+    # Ensure both matrices have the same number of rows before stacking horizontally
+    max_rows = max(encoded_data.shape[0], user_profile["required_facility_binary"].shape[0])
+    encoded_data_padded = vstack([encoded_data, sp.csr_matrix((max_rows - encoded_data.shape[0], encoded_data.shape[1]))])
+    required_facility_binary_padded = vstack([user_profile["required_facility_binary"], sp.csr_matrix((max_rows - user_profile["required_facility_binary"].shape[0], user_profile["required_facility_binary"].shape[1]))])
+
+    # Stack matrices horizontally
+    user_profile_encoded = hstack([encoded_data_padded, required_facility_binary_padded])
+
+    user_profile["encoded_features"] = user_profile_encoded
+
+    print("Encoded data shape:", encoded_data.shape)
+    print("Facility binary shape:", user_profile["required_facility_binary"].shape)
+    print("User profile is:", user_profile)
+
+    return user_profile
 
 
-def create_user_feature_vector(age, gender, states, cities, min_budgets, required_facilities, city_ratings, hotel_ratings, attraction_ratings):
-    # Initialize feature vector
-    user_feature_vector = {}
 
-    # Demographic information
-    user_feature_vector['age'] = age
-    user_feature_vector['gender'] = gender
+  # Separate user features and facilities (assuming facilities are binary):
 
-    # Search preferences
-    user_feature_vector['states'] = states
-    user_feature_vector['cities'] = cities
-    user_feature_vector['min_budgets'] = min_budgets
-    user_feature_vector['required_facilities'] = required_facilities
+# Define generate_recommendations function (modify as needed)
+def generate_recommendations(user_profile, hotels_df, k=5):
 
-    # Ratings for cities
-    for city, rating in city_ratings:
-        user_feature_vector[f'city_rating_{city}'] = rating
+    # Calculate cosine similarity between user profile and hotels
+    user_vector = user_profile["encoded_features"]
+    # Inside the generate_recommendations function, after fetching user_vector:
+    user_vector = user_vector.reshape(1, -1)  # Reshape to 1 row and 20 columns
 
-    # Ratings for hotels
-    for hotel, rating in hotel_ratings:
-        user_feature_vector[f'hotel_rating_{hotel}'] = rating
+    print("Shape of user_vector:", user_vector.shape)
+    print("Shape of hotel_features_matrix:", hotel_features_matrix.shape)
 
-    # Ratings for attractions
-    for attraction, rating in attraction_ratings:
-        user_feature_vector[f'attraction_rating_{attraction}'] = rating
+    # Print the first few rows of the user vector and hotel features matrix
+    print("User vector:")
+    print(user_vector.tocsr()[:2])  # Print the first 5 rows
+  # Print the first 5 rows
+    print("Hotel features matrix:")
+    print(hotel_features_matrix[:2])  # Print the first 5 rows
 
-    return user_feature_vector
+    # Inside the generate_recommendations function
+    if user_vector.shape[0] == 0 or hotel_features_matrix.shape[0] == 0:
+        print("User profile or hotel features matrix is empty.")
+        # Handle empty matrices, e.g., return default recommendations
+        return None
 
-# Item-Item Similarity Calculation
-def calculate_item_item_similarity(hotel_features_combined,attraction_features_combined):
 
-    # Calculate item-item similarity matrix for hotels
-    hotel_similarity_matrix = cosine_similarity(hotel_features_combined)    
-    # Calculate item-item similarity matrix for attractions
-    attraction_similarity_matrix = cosine_similarity(attraction_features_combined)
+    cosine_similarities = cosine_similarity(user_vector, hotel_features_matrix)
+
+    # Get indices of top-k most similar hotels
+    top_k_indices = cosine_similarities.argsort()[:, ::-1][:, :k]
+
+    # Retrieve recommended hotels from the DataFrames
+    recommended_hotels = hotels_df_grouped.iloc[top_k_indices[0]]
+
+    return recommended_hotels
+
+# Assuming you have Flask routes defined below
+
+@app.route('/example')
+def example_route():
+    user_id = session.get('user_id')
+    user_profile = create_user_profile_vector(user_id)
+    recommended_hotels = generate_recommendations(user_profile, hotels_df_grouped)
+    return render_template('home.html', recommended_hotels=recommended_hotels)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# @app.route('/home_recommend')
+# def home_recommend():
+
+#     # Load hotel dataset 
+#     # Drop irrelevant columns (images)
+#     hotel_data = hotel_df
+#     hotel_data = hotel_data.drop(columns=['Image','Hotel_Price','Hotel_Rating'])
+#     attraction_data = places_df
+#     # attraction_data = attraction_data.drop(columns=['Images'])
+#     attraction_data = attraction_data.drop(columns=['Images', 'Distance', 'Place_desc','Ratings'])
+
+#     # Convert text fields to lowercase
+#     hotel_data['Hotel_Name'] = hotel_data['Hotel_Name'].str.lower()
+#     hotel_data['City'] = hotel_data['City'].str.lower()
+#     for feature in ['Feature_1', 'Feature_2', 'Feature_3', 'Feature_4', 'Feature_5', 'Feature_6', 'Feature_7', 'Feature_8', 'Feature_9']:
+#      hotel_data[feature] = hotel_data[feature].str.lower()
+#     attraction_data['Place'] = attraction_data['Place'].str.lower()
+#     attraction_data['City'] = attraction_data['City'].str.lower()
+
+#     # Save cleaned and normalized datasets
+#     hotel_data.to_csv('cleaned_hotel_dataset.csv', index=False)
+#     attraction_data.to_csv('cleaned_attraction_dataset.csv', index=False)
+
+#     # Fetch user instances,search query instances from the database
+#     users = User.query.all()
+#     search_queries = SearchQuery.query.all()
+
+#     # user vector
+#     user_vectors = create_user_vectors(users, search_queries)
+#     print("User vector type:", type(user_vectors))
+#     print("User vector content:", user_vectors)
+
+#     # for similarity calculation
+#     vector_for_user=vectorize_user(user_vectors)
+#     print("vectorized user vector:",vector_for_user)
+
+
+#     # Load cleaned hotel and attraction datasets from CSV files
+#     hotel_da = pd.read_csv('cleaned_hotel_dataset.csv')
+
+#     # Initialize OneHotEncoder
+#     encoder = OneHotEncoder()
+
+#     # Fit and transform the city data
+#     city_encoded = encoder.fit_transform(hotel_da[['City']])
+
+#     # Convert to DataFrame
+#     city_encoded_df = pd.DataFrame(city_encoded.toarray(), columns=encoder.get_feature_names_out(['City']))
+
+#     # Concatenate with existing features
+#     hotel_data_encoded = pd.concat([hotel_da.drop(columns=['City']), city_encoded_df], axis=1)
+
+#     attraction_da = pd.read_csv('cleaned_attraction_dataset.csv')
+
+#     # Convert hotel and attraction data to dictionary format
+
+#     attractions = []
+#     hotels = []
+#     for index, row in hotel_da.iterrows():
+#         hotel = {
+#             'name': row['Hotel_Name'],
+#             'city': row['City'],
+#             'city_encoded': city_encoded_df.iloc[index].values,  # Add city_encoded feature
+#             'feature_1': row['Feature_1'],
+#             'feature_2': row['Feature_2'],
+#             'feature_3': row['Feature_3'],
+#             'feature_4': row['Feature_4'],
+#             'feature_5': row['Feature_5'],
+#             'feature_6': row['Feature_6'],
+#             'feature_7': row['Feature_7'],
+#             'feature_8': row['Feature_8'],
+#             'feature_9': row['Feature_9'],                
+#         }
+#         hotels.append(hotel)
     
-    return hotel_similarity_matrix, attraction_similarity_matrix
-
-def calculate_user_item_hotel_similarity(user_feature_vector,hotel_df_encoded, hotel_features_combined):
-
-    # Calculate cosine similarity between user and each hotel
-    # user_vector = np.array(list(user_feature_vector.values())).reshape(1, -1)
-    user_vector = np.array([v for v in user_feature_vector.values()]).reshape(1, -1)
-    hotel_vectors = np.array(hotel_features_combined.values)
-    similarities = cosine_similarity(user_vector, hotel_vectors)
-
-    # Create a dictionary to store hotel IDs and their corresponding similarity scores
-    hotel_similarity = {hotel_id: similarity[0] for hotel_id, similarity in zip(hotel_df_encoded.index, similarities)}
-
-    return hotel_similarity
-
-def calculate_user_item_attractions_similarity(user_feature_vector, places_df_encoded, attraction_features_combined):
-    # Calculate cosine similarity between user and each attraction
-    # user_vector = np.array(list(user_feature_vector.values())).reshape(1, -1)
-    user_vector = np.array([v for v in user_feature_vector.values()]).reshape(1, -1)
-    attraction_vectors = np.array(attraction_features_combined.values)
-    similarities = cosine_similarity(user_vector, attraction_vectors)
-
-    # Create a dictionary to store attraction IDs and their corresponding similarity scores
-    attraction_similarity = {attraction_id: similarity[0] for attraction_id, similarity in zip(places_df_encoded.index, similarities)}
-
-    return attraction_similarity
+#     for index, row in attraction_da.iterrows():
+#         attraction = {
+#             'name': row['Place'],
+#             'city': row['City'],
+#         }
+#         attractions.append(attraction)
 
 
-def collaborative_filtering_hotel_recommendation(user_id, df_encoded, similarity_matrix):
-    # Get user's ratings
-    user_ratings = Review.query.filter_by(user_id=user_id).all()
-
-    # Predict ratings for unrated items
-    predicted_ratings = {}
-    for item_id in df_encoded.index:
-        if item_id not in [rating.item_id for rating in user_ratings]:
-            similarity_scores = similarity_matrix[item_id]
-            rated_items = [rating.item_id for rating in user_ratings]
-            weighted_sum = 0
-            sum_of_weights = 0
-            for i in range(len(similarity_scores)):
-                if df_encoded.index[i] in rated_items:
-                    weight = similarity_scores[i]
-                    rating = Review.query.filter_by(user_id=user_id, item_id=df_encoded.index[i]).first().rating
-                    weighted_sum += weight * rating
-                    sum_of_weights += abs(weight)
-            if sum_of_weights > 0:
-                predicted_ratings[item_id] = weighted_sum / sum_of_weights
-
-    # Sort predicted ratings in descending order
-    sorted_ratings = sorted(predicted_ratings.items(), key=lambda x: x[1], reverse=True)
-
-    # Return top recommendations
-    top_recommendations = sorted_ratings[:10]  # Change 10 to the number of recommendations needed
-    print("Top hotels are:")
-    print(top_recommendations)
-    return top_recommendations
+#     hotel_vectors = [vectorize_hotel(hotel) for hotel in hotels]
+#     attraction_vectors = [vectorize_attraction(attraction) for attraction in attractions]
+#     print("Shape of hotel_vectors:", np.array(hotel_vectors).shape)
+#     print("Shape of attraction_vectors:", np.array(attraction_vectors).shape)
 
 
-def collaborative_filtering_attractions_recommendation(user_id, df_encoded, similarity_matrix):
-    # Get user's ratings
-    user_ratings = PlaceReview.query.filter_by(user_id=user_id).all()
+#     item_item_similarities_hotels = calculate_item_item_similarity(hotel_vectors)
+#     item_item_similarities_attractions = calculate_item_item_similarity(attraction_vectors)  
 
-    # Predict ratings for unrated items
-    predicted_ratings = {}
-    for item_id in df_encoded.index:
-        if item_id not in [rating.item_id for rating in user_ratings]:
-            similarity_scores = similarity_matrix[item_id]
-            rated_items = [rating.item_id for rating in user_ratings]
-            weighted_sum = 0
-            sum_of_weights = 0
-            for i in range(len(similarity_scores)):
-                if df_encoded.index[i] in rated_items:
-                    weight = similarity_scores[i]
-                    rating = PlaceReview.query.filter_by(user_id=user_id, item_id=df_encoded.index[i]).first().rating
-                    weighted_sum += weight * rating
-                    sum_of_weights += abs(weight)
-            if sum_of_weights > 0:
-                predicted_ratings[item_id] = weighted_sum / sum_of_weights
+#     # user_item_similarities_hotels = calculate_user_item_similarity(vector_for_user, hotel_vectors)
+#     # user_item_similarities_attractions = calculate_user_item_similarity(vector_for_user, attraction_vectors)   
 
-    # Sort predicted ratings in descending order
-    sorted_ratings = sorted(predicted_ratings.items(), key=lambda x: x[1], reverse=True)
+#     # Render the home.html template with the recommendation results
+#     return render_template('home.html')
 
-    # Return top recommendations
-    top_recommendations = sorted_ratings[:10]  # Change 10 to the number of recommendations needed
-    print("Top attractions are:")
-    print(top_recommendations)
-    return top_recommendations
+
+
+# def create_user_vectors(users, search_queries):
+#     user_vectors = defaultdict(lambda: defaultdict(int))
+
+#     # Iterate over search queries
+#     for query in search_queries:
+#         user_id = query.user_id
+#         city = query.city
+#         required_facility = query.required_facility
+
+#         # Increment the count of the city and required facility for the user
+#         user_vectors[user_id]['city_' + city] += 1
+#         user_vectors[user_id]['facility_' + required_facility] += 1
+
+#     return user_vectors
+
+# # Convert user vector to a format suitable for cosine similarity calculation
+# # def vectorize_user(user_vector):
+# #     vectorized_users = []
+
+# #     for inner_dict in user_vector.values():
+# #         vectorized_user = list(inner_dict.values())
+# #         vectorized_users.append(vectorized_user)
+# #     return vectorized_users
+
+# def vectorize_user(user_vector):
+#     vectorized_users = []
+#     print("User vector type:", type(user_vector))
+#     print("User vector content:", user_vector)
+#     for inner_dict in user_vector.values():
+#         vectorized_user = [inner_dict[key] for key in sorted(inner_dict.keys())]
+#         vectorized_users.append(vectorized_user)
+#     return vectorized_users
+
+
+# # Convert hotel and attraction vectors to a format suitable for cosine similarity calculation
+# def vectorize_hotel(item):
+#     return [
+#             *item['city_encoded'],
+#             item.get('feature_1', 0),
+#             item.get('feature_2', 0),
+#             item.get('feature_3', 0),
+#             item.get('feature_4', 0),
+#             item.get('feature_5', 0),
+#             item.get('feature_6', 0),
+#             item.get('feature_7', 0),
+#             item.get('feature_8', 0),
+#             item.get('feature_9', 0),                          
+#             ]  
+
+# def vectorize_attraction(attraction):
+#     return [attraction.get('rating', 0),
+#             attraction.get('city', '')
+#             ]
+
+# # Calculate item-item similarity
+# # def calculate_item_item_similarity(item_vectors):
+# #     item_similarities = cosine_similarity(item_vectors)
+# #     return item_similarities
+
+
+# # Ensure input format and dimensions are correct for cosine_similarity
+# def calculate_item_item_similarity(item_vectors):
+#     # Convert item_vectors to numpy array to ensure consistency
+#     item_vectors_np = np.array(item_vectors)
+#     # Check if item_vectors_np is a 2D array
+#     if item_vectors_np.ndim != 2:
+#         raise ValueError("Input item_vectors must be a 2D array.")
+#     # Check if all rows have the same length
+#     if len(set(len(row) for row in item_vectors_np)) != 1:
+#         raise ValueError("All rows in item_vectors must have the same length.")
+#     # Verify the validity of numerical data
+#     if np.isnan(item_vectors_np).any() or not np.isfinite(item_vectors_np).all():
+#         raise ValueError("Input item_vectors contains NaN or infinite values.")
+#     # Calculate cosine similarity
+#     item_similarities = cosine_similarity(item_vectors_np)
+#     return item_similarities
+
+# # The rest of your code remains unchanged
 
 
 
@@ -808,10 +1090,55 @@ if __name__ == '__main__':
 
 
 
-   # Combine feature vectors
-    # combined_feature_vector = pd.concat([hotel_feature_vector, attraction_feature_vector], axis=1)
+    # Define features to be normalized
+    # features_to_normalize_hotel = ['Hotel_Rating', 'Hotel_Price']
+    # features_to_normalize_attraction = ['Ratings']
 
-    # # Example: Average rating of hotels in the same city
-    # average_rating_by_city = hotel_df_encoded.groupby('City')['Hotel_Rating'].mean().reset_index()
-    # average_rating_by_city.rename(columns={'Hotel_Rating': 'Avg_Hotel_Rating_by_City'}, inplace=True)
-    # hotel_df_encoded = hotel_df_encoded.merge(average_rating_by_city, on='City', how='left')
+    # Initialize MinMaxScaler
+    # scaler = MinMaxScaler()
+
+    # # Normalize features for hotel dataset
+    # hotel_data[features_to_normalize_hotel] = scaler.fit_transform(hotel_data[features_to_normalize_hotel])
+
+    # # Normalize features for attraction dataset
+    # attraction_data[features_to_normalize_attraction] = scaler.fit_transform(attraction_data[features_to_normalize_attraction])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# print("User vectors after search queries processing:")
+    # print(user_vectors)
+
+    # Add age and gender from User table
+    # for user in users:
+    #     user_id = user.id
+    #     age = user.age
+    #     gender = user.gender
+
+    #     # Add age and gender to the user vector
+    #     user_vectors[user_id]['age'] = age
+    #     user_vectors[user_id]['gender_' + gender] = 1
+
+    # print("User vectors after adding age and gender:")
+    # print(user_vectors)
+
+    # Normalize user vectors
+    # for user_id, vector in user_vectors.items():
+    #     total_queries = sum(vector.values())
+    #     for key in vector:
+    #         vector[key] /= total_queries
+
+    # print("Normalized user vectors:")
+    # print(user_vectors)
