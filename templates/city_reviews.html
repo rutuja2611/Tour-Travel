@@ -1,35 +1,62 @@
-<!-- city_reviews.html -->
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <!-- Include necessary CSS and JS libraries -->
-    <!-- ... -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Reviews</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/city_reviews.css') }}">
 
-    <title>{{ city|title }} Reviews</title>
-    <!-- Additional styling for the reviews page, if needed -->
-    <style>
-        /* Add your custom styling for the reviews page */
-    </style>
 </head>
+
 <body>
-    <div class="container">
-        <h2>{{ city|title }} Reviews</h2>
-
-        {% for city_review in city_reviews %}
-            <div>
-                <p>User: {{ city_review.user.username }}</p>
-                <p>Rating: {{ city_review.rating }}</p>
-                <p>Review: {{ city_review.review_text }}</p>
-                <form method="POST" action="{{ url_for('delete_review', review_id=city_review.id) }}">
-                    <button type="submit" class="btn btn-danger">Delete Review</button>
-                </form>
-                <hr>
-            </div>
-        {% endfor %}
-
-        <!-- Add a back button or link to navigate back to the result page -->
-        <a href="{{ url_for('result') }}" class="btn btn-secondary">Back to Results</a>
+    <div class="navbar">
+        <div class="navbar-toggle" onclick="toggleNavbar()">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <!-- <li><a href="{{ url_for('result') }}">Back</a></li> -->
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
     </div>
+    <div class="container">
+        <h1>{{ city|title }} Reviews</h1>
+
+        <!-- Display Reviews -->
+        <div class="reviews">
+            <h2>Customer Review</h2>
+            {% for review in reviews %}
+            <div class="review">
+                <h3>{{ city_review.user.username }}</h3>
+                <p class="rating">Rating: <span>{{ city_review.rating }}</span></p>
+                <p class="comment">{{ city_review.review_text }}</p>
+                <p class="time">{{ review.created_at.strftime('%Y-%m-%d %H:%M:%S') }} </p>
+
+                <!-- Review Form -->
+                <div class="review-form">
+                    <form id="reviewForm" method="POST"
+                        action="{{ url_for('delete_review', review_id=city_review.id) }}"></form>
+                    <button type="submit">Delete Review</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+            <!-- <a href="{{ url_for('result') }}" class="link">Back to Results</a> -->
+        </div>
+    </div>
+    <script>
+        function toggleNavbar() {
+            const navbar = document.querySelector('.navbar ul');
+            navbar.classList.toggle('active');
+        }
+    </script>
 </body>
+
 </html>

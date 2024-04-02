@@ -36,6 +36,41 @@
             box-sizing: border-box;
         } */
 
+        .navbar {
+    /* position: fixed; */
+    top: 0;
+    left: 0;
+    background-color: transparent; /* Background color with opacity */
+    padding: 10px 20px;
+    z-index: 1000; /* Ensure navbar appears above other content */
+    width: 100%;
+    box-sizing: border-box; /* Include padding in width calculation */
+    display: flex;
+    justify-content: flex-end;
+}
+
+.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.navbar li {
+    margin-left: 20px;
+}
+
+.navbar a {
+    color: black;
+    text-decoration: none;
+    font-size: 22px;
+    transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+    color: #ddd;
+}
       .col-md-4 {
         margin-top: 2rem;
       }
@@ -147,10 +182,33 @@
         -webkit-box-orient: vertical;
         max-height: 10em; /* Adjust the max height based on your design */
       }
+
+      img{
+        width: 500px;
+        height: 200px !important;
+        object-fit: cover;
+      }
     </style>
   </head>
 
   <body>
+
+
+
+    <div class="navbar">
+      <ul>
+          <li><a href="{{ url_for('home') }}">Home</a></li>
+          <!-- <li><a href="{{ url_for('result') }}">Back</a></li> -->
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+  </div>
+
+
+
+
+
+  
+
     <div class="container" id="fixing-width">
       <h2 class="type-destination">{{ state|upper }}, {{ city|upper }}</h2>
 
@@ -288,7 +346,19 @@
       </div>
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
     <div class="container">
+
 
 <!-- Add this section after the hotels and places loops -->
 <h3 id="choose-place">City Reviews for {{ city|upper }}</h3>

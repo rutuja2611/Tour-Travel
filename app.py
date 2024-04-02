@@ -15,6 +15,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import OneHotEncoder
 from collections import defaultdict
 from flask import session
+from itertools import chain
+
 
 
 app = Flask(__name__)
@@ -24,6 +26,31 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'  # Use SQLite for simplicity
 db = SQLAlchemy(app)
 
+
+import pandas as pd
+
+# Load the CSV file
+df = pd.read_csv('Places.csv')
+
+# Remove starting number, full stop, and space before the text in the 'Places' column
+df['Place'] = df['Place'].str.replace(r'^\d+\.\s*', '', regex=True)
+# print(df['Place'].head())
+
+# Save the DataFrame back to the CSV file
+df.to_csv('Places.csv', index=False)
+
+
+
+
+# Load the CSV file
+df_a = pd.read_csv('att.csv')
+
+# Remove starting number, full stop, and space before the text in the 'Places' column
+df_a['Place'] = df_a['Place'].str.replace(r'^\d+\.\s*', '', regex=True)
+df_a = df_a.dropna(subset=['Ratings'])
+
+# Save the DataFrame back to the CSV file
+df_a.to_csv('att.csv', index=False)
 
 # user database created while registration-->WORKS
 class User(UserMixin, db.Model):
@@ -182,48 +209,66 @@ def load_user(id):
 
 @app.route('/home', methods=['GET', 'POST'])
 def home():
+
+    #content based for hotel
     # Assuming user_id is available in session or request context
     user_id = session.get('user_id')  # Example user ID, replace with actual user ID retrieval
-    print(user_id)
+    # print(user_id)
     last_rated_hotel = db.session.query(Review.hotel_name).filter(Review.user_id == user_id, Review.rating > 4).order_by(Review.created_at.desc()).first()
-    print(last_rated_hotel)
+    # print(last_rated_hotel)
     if last_rated_hotel:
         last_rated_hotel = last_rated_hotel[0]  # Extract hotel name from tuple
         recommendations = recomm(last_rated_hotel)  # Pass last_rated_hotel to recomm function
+        print("Content based hotel: ",recommendations)
+        print(type(recommendations))        
     else:
         recommendations = []
+
+    #content based for attractions
+    last_rated_attraction = db.session.query(PlaceReview.place_name).filter(PlaceReview.user_id == user_id, PlaceReview.rating > 4).order_by(PlaceReview.created_at.desc()).first()
+    # print(last_rated_attraction)
+    if last_rated_attraction:
+        last_rated_attraction = last_rated_attraction[0]  # Extract hotel name from tuple
+        recommend_att = recommend_attraction(last_rated_attraction)  # Pass last_rated_hotel to recomm function
+        print("content based att: ",recommend_att)
+        print(type(recommend_att))
+    else:
+        recommend_att = []
+            
 
 
 
 
     #collaborative model
     ratings = pd.read_csv("co.csv", index_col=0)
-    print("Read CSV file successfully")
-    print(ratings.head(2))  # Print the first 2 entries of ratings DataFrame
+    ratings_att = pd.read_csv("at.csv", index_col=0)
+    # print("Read CSV file successfully")
+    # print(ratings_att.head(2))  # Print the first 2 entries of ratings DataFrame
 
     ratings = ratings.dropna(thresh=1, axis=1).fillna(0)
-    print("Preprocessing ratings data")
-    print(ratings.head(3))
+    ratings_att = ratings_att.dropna(thresh=1, axis=1).fillna(0)
+    # print("Preprocessing ratings data")
+    # print(ratings_att.head(3))
 
     def standardize(row):
         mean = row.mean()
         min_val = row.min()
         max_val = row.max()
-        if max_val == min_val:
-            return 0.0
-        else:
-            return (row - mean) / (max_val - min_val)
+        return (row - mean) / (max_val - min_val)
 
     df_std = ratings.apply(standardize)
-    print("Standardized ratings data")
-    print(df_std.head(3))
+    df_std_att = ratings_att.apply(standardize)
+    # print("Standardized ratings data")
+    # print(df_std_att.head(3))
 
     item_similarity = cosine_similarity(df_std.T)
-    print("Computed item similarity matrix")
-    print(item_similarity)  # Print similarity matrix if needed
+    item_similarity_att = cosine_similarity(df_std_att.T)
+    # print("Computed item similarity matrix")
+    # print(item_similarity_att)  # Print similarity matrix if needed
     item_similarity_df = pd.DataFrame(item_similarity, index=ratings.columns, columns=ratings.columns)
-    print("Item similarity DataFrame:")
-    print(item_similarity_df)  # Print item similarity DataFrame if needed
+    item_similarity_df_att = pd.DataFrame(item_similarity_att, index=ratings_att.columns, columns=ratings_att.columns)
+    # print("Item similarity DataFrame:")
+    # print(item_similarity_df_att)  # Print item similarity DataFrame if needed
 
 
     def get_similar(movie_name, rating):
@@ -231,35 +276,156 @@ def home():
         similar_score = item_similarity_df[movie_name] * (rating_float - 2.5)
         similar_score = similar_score.sort_values(ascending=False)
         return similar_score
+    
+    def get_similar_att(movie_name,rating):
+        rating_float = float(rating)
+        similar_score = item_similarity_df_att[movie_name]*(rating_float - 2.5)
+        similar_score = similar_score.sort_values(ascending=False)
+        # print(type(similar_score))
+        return similar_score
 
 
     user_id = session.get('user_id')  # Assuming current_user is available
+    
     user_ratings = Review.query.filter_by(user_id=user_id).all()
-    print("Retrieved user ratings")
+    user_ratings_att = PlaceReview.query.filter_by(user_id=user_id).all()
+    # print("Retrieved user ratings")
 
     user_four = [(review.hotel_name, review.rating) for review in user_ratings]
-    print("User Four:",user_four)
+    user_four_att = [(review.place_name, review.rating) for review in user_ratings_att]
+    # print("User Four att:",user_four_att)
     similar_scores = pd.DataFrame()
+    similar_scores_att = pd.DataFrame()
 
     for movie, rating in user_four:
         similar_scores = pd.concat([similar_scores, get_similar(movie, rating)])
+        
+    for movie, rating in user_four_att:
+        similar_scores_att = pd.concat([similar_scores_att, get_similar_att(movie, rating)])        
 
     # Group the similarity scores by movie name and sum them up
     collab_recommendations = similar_scores.groupby(level=0).sum()
+    collab_recommendations_att = similar_scores_att.groupby(level=0).sum()
 
     # Sort the DataFrame by total similarity score in descending order
     # collab_recommendations = collab_recommendations.sort_values(ascending=False)
 
     # Print the sorted collab_recommendations
-    print("Sorted collab_recommendations:")
-    print(collab_recommendations)
+    # print("Sorted collab_recommendations:")
+    # print(collab_recommendations_att)
 
 
-    top_recommendations = collab_recommendations.head(5).index.tolist()     
-    print("Generated top recommendations")
-    print("Generated top recommendations:", top_recommendations)
+    top_recommendations = collab_recommendations.head(5).index.tolist()   
+    print("Collab hotel: ",top_recommendations)
+    print(type(top_recommendations))
+    top_recommendations_att = collab_recommendations_att.head(5).index.tolist()  
+    print("Collab att: ",top_recommendations_att)
+    print(type(top_recommendations_att))
 
-    return render_template('home.html', last_rated_hotel=last_rated_hotel, recommendations=recommendations,top_recommendations=top_recommendations)
+    # print("Generated top recommendations")
+    # print("Generated top recommendations:", top_recommendations)
+
+
+    # combining recommended hotels
+
+    # Initialize an empty list to store unique recommendations while maintaining order
+    unique_recommendations = []
+    # Initialize an empty set to keep track of seen recommendations
+    seen_recommendations = set()
+
+    for hotel in recommendations:
+    # Check if the hotel has not been seen before
+     if hotel not in seen_recommendations:
+        # Add the hotel to the unique_recommendations list
+        unique_recommendations.append(hotel)
+        # Add the hotel to the seen_recommendations set
+        seen_recommendations.add(hotel)
+
+    for hotel in top_recommendations:
+    # Check if the hotel has not been seen before
+     if hotel not in seen_recommendations:
+        # Add the hotel to the unique_recommendations list
+        unique_recommendations.append(hotel)
+        # Add the hotel to the seen_recommendations set
+        seen_recommendations.add(hotel)
+
+     unique_top_recommendations=unique_recommendations
+
+
+    # combining recommended attrcations
+
+    # Initialize an empty list to store unique recommendations while maintaining order
+    unique_recommendations_att = []
+    # Initialize an empty set to keep track of seen recommendations
+    seen_recommendations_att = set()
+
+    for hotel in recommend_att:
+    # Check if the hotel has not been seen before
+     if hotel not in seen_recommendations_att:
+        # Add the hotel to the unique_recommendations list
+        unique_recommendations_att.append(hotel)
+        # Add the hotel to the seen_recommendations set
+        seen_recommendations_att.add(hotel)
+
+    for hotel in top_recommendations_att:
+    # Check if the hotel has not been seen before
+     if hotel not in seen_recommendations_att:
+        # Add the hotel to the unique_recommendations list
+        unique_recommendations_att.append(hotel)
+        # Add the hotel to the seen_recommendations set
+        seen_recommendations_att.add(hotel)
+
+     unique_top_recommendations_att=unique_recommendations_att
+
+      # Retrieve additional data for hotels
+    hotel_data_for_rec = pd.read_csv("hot.csv")
+    hotel_info = hotel_data_for_rec.loc[hotel_data_for_rec['Hotel_Name'].isin(unique_top_recommendations)]
+    print(hotel_info)
+    
+    # Sort hotels in the same order as unique_recommendations
+    sorted_hotels = hotel_info.set_index('Hotel_Name').loc[unique_recommendations].reset_index()
+
+    # Convert sorted hotel info to a list of dictionaries
+    hotel_info_list = sorted_hotels.to_dict(orient='records')
+    
+    # Prepare hotel information for template
+    hotels = []
+    for hotel in hotel_info_list:
+        hotel_details = {
+            "Hotel_Name": hotel["Hotel_Name"],
+            "Hotel_Rating": hotel["Hotel_Rating"],
+            "Hotel_Price": hotel["Hotel_Price"],
+            "Image": hotel["Image"],
+            "Features": hotel["Feature_1"] + ", " + hotel["Feature_2"] + ", " + hotel["Feature_3"] + ", " + hotel["Feature_4"] + ", " + hotel["Feature_5"] + ", " + hotel["Feature_6"] + ", " + hotel["Feature_7"] + ", " + hotel["Feature_8"] + ", " + hotel["Feature_9"],
+        }
+        hotels.append(hotel_details)
+
+
+    # Retrieve additional data for attractions
+        # Retrieve additional data for attractions
+    attraction_data_for_rec = pd.read_csv("att.csv")
+    attraction_info = attraction_data_for_rec.loc[attraction_data_for_rec['Place'].isin(unique_top_recommendations_att)]
+
+    # Sort attractions in the same order as unique_top_recommendations_att
+    sorted_attractions = attraction_info.set_index('Place').loc[unique_top_recommendations_att].reset_index()
+
+    # Convert sorted attraction info to a list of dictionaries
+    attraction_info_list = sorted_attractions.to_dict(orient='records')
+
+    # Prepare attraction information for template
+    attractions = []
+    for attraction in attraction_info_list:
+        attraction_details = {
+            "Place": attraction["Place"],
+            "Rating": attraction["Ratings"],
+            "Image": attraction["Images"],
+            "Place_desc": attraction["Place_desc"],
+        }
+        attractions.append(attraction_details)
+
+
+
+    return render_template('home.html',hotels=hotels,attractions=attractions,unique_top_recommendations=unique_top_recommendations,unique_top_recommendations_att=unique_top_recommendations_att, recommendations=recommendations,top_recommendations=top_recommendations,last_rated_attraction=last_rated_attraction,recommend_att=recommend_att,top_recommendations_att=top_recommendations_att,hotel_info_list=hotel_info_list,attraction_info=attraction_info)
 
 @app.route('/beaches')
 def beaches():
@@ -607,7 +773,7 @@ def delete_review(review_id):
 
 
 
-# content based filtering
+# content based filtering for hotels
 from sklearn.feature_extraction.text import CountVectorizer
 # Load data
 movies = pd.read_csv('hot.csv')
@@ -641,16 +807,50 @@ def recomm(movie):
     
     index = filtered_movies.index[0]
     distances = sorted(list(enumerate(similarity[index])), reverse=True, key=lambda x: x[1])
-    recommendations = [movies.iloc[i[0]] for i in distances[1:6]]
+    recommendations = [movies.iloc[i[0]]['Hotel_Name'] for i in distances[1:7]]
     return recommendations
 
+
+
+
+#content based filtering for attraction
+attractions = pd.read_csv('att.csv')
+attractions.fillna("", inplace=True)  # Fill missing values
+
+# Preprocess data
+attractions['tags'] = attractions['City'] + ' ' + attractions['Place_desc']
+attractions['tags'] = attractions['tags'].apply(lambda x: x.lower())
+
+# Stemming
+import nltk
+from nltk.stem.porter import PorterStemmer
+ps = PorterStemmer()
+def stem(text):
+    stemmed_words = [ps.stem(word) for word in text.split()]
+    return " ".join(stemmed_words)
+
+attractions['tags'] = attractions['tags'].apply(stem)
+
+# Vectorize the text data
+cv = CountVectorizer(max_features=5000, stop_words='english')
+vec = cv.fit_transform(attractions['tags']).toarray()
+
+# Calculate cosine similarity
+similarity = cosine_similarity(vec)
+
+# Recommendation function
+def recommend_attraction(attraction):
+    index = attractions[attractions['Place'] == attraction].index[0]
+    distances = sorted(list(enumerate(similarity[index])), reverse=True, key=lambda x: x[1])
+    recommendations = [attractions.iloc[i[0]]['Place'] for i in distances[1:7]]
+    return recommendations
 
 # collaborative filtering
 
 import pandas as pd
-from app import app, db, User, Review
+from app import app, db, User, Review, PlaceReview
 
-# creating the dataset
+# creating the dataset for hotels
 
 # Load hotel names from hot.csv
 hotels_df = pd.read_csv('hot.csv')
@@ -685,47 +885,42 @@ with app.app_context():
 ratings_df.to_csv('co.csv')
 
 
+# create dataset for attractions
+
+# Load attractions data from att.csv
+attractions_df = pd.read_csv('att.csv')
+
+# Create a DataFrame for storing ratings
+ratings_att_df = pd.DataFrame(columns=[''] + list(attractions_df['Place']))
+
+# Retrieve user IDs within the Flask app context
+with app.app_context():
+    user_ids = [user.id for user in User.query.all()]
+
+# Set user IDs in the first column
+ratings_att_df[''] = ['id of user: ' + str(user_id) for user_id in user_ids]
+
+# Set user IDs as index
+ratings_att_df.set_index('', inplace=True)
+
+# Retrieve ratings from reviews within the Flask app context
+with app.app_context():
+    for user_id in user_ids:
+        user_reviews = PlaceReview.query.filter_by(user_id=user_id).all()
+        for review in user_reviews:
+            place_name = review.place_name
+            rating = review.rating
+            ratings_att_df.at['id of user: ' + str(user_id), place_name] = rating
+
+# Save ratings to at.csv
+ratings_att_df.to_csv('at.csv')
 
 
 
-# #model
 
-# @app.route('/collab')
-# def collab():
-#     ratings = pd.read_csv("co.csv", index_col=0)
-#     ratings = ratings.dropna(thresh=1, axis=1).fillna(0)
 
-#     def standardize(row):
-#         mean = row.mean()
-#         min_val = row.min()
-#         max_val = row.max()
-#         if max_val == min_val:
-#             return 0.0
-#         else:
-#             return (row - mean) / (max_val - min_val)
 
-#     df_std = ratings.apply(standardize)
 
-#     item_similarity = cosine_similarity(df_std.T)
-#     item_similarity_df = pd.DataFrame(item_similarity, index=ratings.columns, columns=ratings.columns)
-
-#     def get_similar(movie_name, rating):
-#         similar_score = item_similarity_df[movie_name] * (rating - 2.5)
-#         similar_score = similar_score.sort_values(ascending=False)
-#         return similar_score
-
-#     user_id = session.get('user_id')  # Assuming current_user is available
-#     user_ratings = Review.query.filter_by(user_id=user_id).all()
-
-#     user_four = [(review.hotel_name, review.rating) for review in user_ratings]
-#     similar_scores = pd.DataFrame()
-
-#     for movie, rating in user_four:
-#         similar_scores = pd.concat([similar_scores, get_similar(movie, rating)], ignore_index=True)
-
-#     recommendations = similar_scores.sum().sort_values(ascending=False)
-#     top_recommendations = recommendations.head(5).index.tolist()
-#     return render_template('home.html', top_recommendations=top_recommendations)
 
 
 

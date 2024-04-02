@@ -1,0 +1,184 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-position: center;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f8f8;
+    background-image: url('/static/images/hotel_review.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: transparent; /* Background color with opacity */
+    padding: 10px 20px;
+    z-index: 1000; /* Ensure navbar appears above other content */
+    width: 100%;
+    box-sizing: border-box; /* Include padding in width calculation */
+    display: flex;
+    justify-content: flex-end;
+}
+
+.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.navbar li {
+    margin-left: 20px;
+}
+
+.navbar a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 22px;
+    transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+    color: #ddd;
+}
+
+.container {
+    margin-top: 50px; /* Add margin to accommodate the fixed navbar */
+}
+
+/* Toggle button */
+.navbar-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.navbar-toggle .bar {
+    width: 25px;
+    height: 3px;
+    background-color: black;
+    margin: 3px 0;
+    transition: background-color 0.3s ease;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1, h3, h2 {
+    text-align: center;
+    font-family: "Mochiy Pop One", sans-serif;
+}
+h1{
+    color: #fff;
+    font-weight: 400;
+    font-style: normal;
+}
+h2{
+    color: #fff;
+    font-weight: 200;
+    font-style: normal;
+}
+.review-form h2{
+    color: black;
+    font-family: "Mochiy Pop One", sans-serif;
+    font-weight: 200;
+    font-style: normal;
+}
+
+/* Review Form Styles */
+.review-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #535C91;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto;
+}
+
+button:hover {
+    background-color: #7C93C3;;
+}
+
+/* Reviews Styles */
+.reviews {
+    margin-top: 20px;
+}
+
+.review {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.review h3 {
+    margin-top: 0;
+}
+
+.rating {
+    font-weight: bold;
+}
+.time{
+    margin-top: 10px;
+}
+.comment {
+    margin-top: 10px;
+}
+@media only screen and (max-width: 768px) {
+    .navbar {
+        padding: 10px;
+    }
+    .navbar ul {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 40px;
+        right: 0;
+        background-color: rgba(0, 0, 255, 0.5); /*Blue background with opacity */
+        width: 200px; /* Set width for the navbar */
+        padding: 10px;
+    }
+    .navbar ul.active {
+        display: flex;
+    }
+    .navbar li {
+        margin: 10px 0;
+    }
+    .navbar-toggle {
+        display: flex;
+    }
+}

@@ -9,6 +9,124 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link
+    rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <style>
+      img{
+  width: 500px;
+  height: 200px !important;
+  object-fit: cover;
+}
+      .col-md-4 {
+          margin-top: 2rem;
+      }
+      
+      .my-panel {
+          /* height: 85vh; */
+          overflow: hidden;
+          border: 1px solid rgb(218, 217, 217);
+          border-radius: 10px;
+          box-shadow: 2px 2px 5px 0px rgba(122, 185, 114, 0.75);
+          text-align: justify;
+          text-overflow: ellipsis;
+          padding: 1rem;
+      }
+      
+      .my-panel:hover {
+          box-shadow: 4px 3px 5px 0px rgba(86, 148, 83, 0.97);
+      }
+      /* .my-panel p {
+          margin: 0.7rem;
+      } */
+      
+      h4 {
+          color: #4caf50;
+          font-weight: bolder;
+      }
+      
+      .fa-star {
+          display: inline-flex;
+          align-items: center;
+          text-align: right;
+          justify-content: center;
+      }
+      
+      .checked {
+          color: orange;
+      }
+      
+      .overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background-color: rgba(119, 216, 119, 0.9);
+          overflow: auto;
+          width: 100%;
+          height: 100%;
+          transform: scale(0);
+          transition: .3s ease;
+          border-radius: 10px;
+      }
+      
+      .im:hover .overlay {
+          transform: scale(1);
+      }
+      
+      .text {
+          color: rgb(249, 252, 248);
+          font-size: 15px;
+          position: absolute;
+          top: 11%;
+          left: 10%;
+          transform: translate(-10%, -10%);
+          text-align: justify;
+          margin: 1rem 0 1rem 1rem;
+      }
+      
+      .im {
+          float: right;
+      }
+      
+      .book {
+          color: white;
+      }
+      
+      .book:hover {
+          text-decoration: none;
+          color: white;
+      }
+      
+      .type-destination {
+          text-align: center;
+          padding: 2rem;
+          font-weight: bolder;
+          color: rebeccapurple;
+          font-size: 32px;
+          text-shadow: rgb(83, 218, 228) 2px 2px 1px 2px;
+      }
+      
+      #intro {
+          text-align: justify;
+      }
+      
+      #choose-place {
+          font-size: 24px;
+          color: rgb(74, 236, 109);
+          text-align: center;
+          font-weight: bolder;
+      }
+      /* #fixing-width {
+          margin: auto rem;
+      } */
+  </style>
+
+
+
 </head>
 <body>
 
@@ -40,33 +158,136 @@
 
 
 
-    <h1>Hotel Recommendation using content based filt</h1>
-    <h2>Last Rated Hotel: {{ last_rated_hotel }}</h2>
-    <hr>
-    {% if recommendations %}
-    <h2>Recommendations</h2>
-    <ul>
-        {% for recommendation in recommendations %}
-        <li>
-            <h3>{{ recommendation['Hotel_Name'] }}</h3>
-            <p>City: {{ recommendation['City'] }}</p>
-            <!-- Add more hotel information here as needed -->
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No recommendations available.</p>
-    {% endif %}
+
     
-    <h1>Top Hotel Recommendations using collab</h1>
-<!-- Add this code snippet in your home.html -->
-<!-- Add this code snippet in your home.html -->
-<h2>Top Recommendations</h2>
+
+    <div class="container" id="fixing-width">
+
+    <h3>TOP HOTELS AS PER YOUR REQUIREMENT</h3>
+    <div class="row">
+      {% for hotel in hotels %}
+        <div class="col-md-4">
+          <div class="my-panel">
+            <div class="thumbnail">
+              <a href="" data-toggle="lightbox" data-gallery="youtubevideos">
+                <img src="{{ hotel['Image'] }}" style="width: 100%; height: 10%">
+              </a>
+              <div class="caption">
+                <h4>{{ hotel['Hotel_Name'] }}</h4>
+                <p>
+                  <span style="color: rgb(231, 125, 143); font-weight: bold; padding-bottom: -10px;">
+                    Price: {{ hotel['Hotel_Price'] }}
+                  </span>
+                </p>
+                <p>
+                  <span style="color: rgb(231, 125, 143); font-weight: bold; padding-bottom: -10px;">
+                    Rating: {{ hotel['Hotel_Rating'] }};
+                  </span>
+                </p>
+                <p>
+                  <span style="color: rgb(158, 98, 108); font-weight: bold;">
+                    Features: {{ hotel['Features'] }}
+                  </span>
+                </p>
+                <hr>
+                <button type="button" class="btn btn-info"><a href="{{ url_for('hotel_reviews', hotel_name=hotel['Hotel_Name']) }}">Reviews</a></button>
+                <button type="button" class="btn btn-info">Directions</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% if loop.index % 3 == 0 %}
+        <div class="clearfix"></div>
+        {% endif %} {% endfor %}
+      </div>
+    </div>
+
+
+
+
+
+    <div class="container">
+      <h3>Top Attrcations AS PER YOUR REQUIREMENT</h3>
+      <div class="row">
+        {% for place in attractions %}
+
+        <div class="col-md-4">
+          <div class="my-panel">
+            <div class="thumbnail">
+              <a
+                href="https://youtu.be/_xVc-_Rug6g"
+                data-toggle="lightbox"
+                data-gallery="youtubevideos"
+              >
+                <img src="{{ place['Image'] }}" style="width: 100%" />
+              </a>
+              <div class="caption">
+                <h4>{{ place.Place }}</h4>
+                <p>
+                  <span
+                    style="
+                      color: rgb(231, 125, 143);
+                      font-weight: bold;
+                      padding-bottom: -10px;
+                    "
+                  >
+                    Ratings: {{ place['Rating'] }}</span
+                  >
+                </p>
+              </div>
+            </div>
+            <p class="place-description" id="description1">
+              {{ place['Place_desc'] }}
+            </p><hr>
+
+
+            <button type="button" class="btn btn-info"><a href="{{ url_for('place_reviews', place_name= place.Place) }}">Reviews</a></button>
+            <button type="button" class="btn btn-info">Directions</button>
+
+
+
+
+          </div>
+        </div>
+
+        {% if loop.index % 3 == 0 %}
+        <div class="clearfix"></div>
+        {% endif %} {% endfor %} 
+      </div>
+    </div>
+
+    
+
+
+
+<!-- 
+
+    <h1>Hotel Recommendation using Hybrid Recommendation</h1>
 <ul>
-  {% for hotel in top_recommendations %}
+  {% for hotel in unique_top_recommendations %}
     <li>{{ hotel }}</li>
   {% endfor %}
 </ul>
+
+
+
+    <h1>Attrcation Recommendation using Hybrid Recommendation</h1>
+<ul>
+  {% for hotel in unique_top_recommendations_att %}
+    <li>{{ hotel }}</li>
+  {% endfor %}
+</ul> -->
+
+
+
+
+
+
+
+
+
+
+
 
 
 </body>
