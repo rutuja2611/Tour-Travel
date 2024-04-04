@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRAVEL FRONTEND</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Paytone+One&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link
+    rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+
+    <header>
+        <a href="{{ url_for('home') }}">Home</a>
+    </header>
+    
+
+
+    <div class="container" id="fixing-width">
+        <h3>Saved Hotels</h3>
+        <div class="row">
+            {% for saved_hotel in saved_hotels %}
+            <div class="col-md-4">
+                <div class="my-panel">
+                    <div class="thumbnail">
+                        <a href="" data-toggle="lightbox" data-gallery="youtubevideos">
+                            <img src="{{ saved_hotel['hotel']['Image'] }}" style="width: 100%; height: 10%">
+                        </a>
+                        <div class="caption">
+                            <h4>{{ saved_hotel['hotel']['Hotel_Name'] }}</h4>
+                            <p>
+                                <span style="color: rgb(231, 125, 143); font-weight: bold; padding-bottom: -10px;">
+                                    Price: {{ saved_hotel['hotel']['Hotel_Price'] }}
+                                </span>
+                            </p>
+                            <p>
+                                <span style="color: rgb(231, 125, 143); font-weight: bold; padding-bottom: -10px;">
+                                    Rating: {{ saved_hotel['hotel']['Hotel_Rating'] }};
+                                </span>
+                            </p>
+                            <p>
+                                <span style="color: rgb(158, 98, 108); font-weight: bold;">
+                                    Features: {{ saved_hotel['hotel']['Feature_1'] }}, {{ saved_hotel['hotel']['Feature_2'] }}, {{ saved_hotel['hotel']['Feature_3'] }}
+                                </span>
+                            </p>
+                            <hr>
+                            <button type="button" class="btn btn-info"><a href="{{ url_for('hotel_reviews', hotel_name=saved_hotel['hotel']['Hotel_Name']) }}">Reviews</a></button>
+                            <button type="button" class="btn btn-info">Directions</button>
+
+                            <hr>
+                            <form action="{{ url_for('delete_hotel') }}" method="post">
+                                <input type="hidden" name="hotel_name" value="{{ saved_hotel.hotel.Hotel_Name }}">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if loop.index % 3 == 0 %}
+            <div class="clearfix"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="container" id="fixing-width">
+        <h3>Saved Attractions</h3>
+        <div class="row">
+            {% for saved_place in saved_place %}
+            <div class="col-md-4">
+                <div class="my-panel">
+                    <div class="thumbnail">
+                        <a href="" data-toggle="lightbox" data-gallery="youtubevideos">
+                            <img src="{{ saved_place.place.Images }}" style="width: 100%; height: 10%">
+                        </a>
+                        <div class="caption">
+                            <h4>{{ saved_place.place.Place }}</h4>
+                            <p>
+                                <span style="color: rgb(231, 125, 143); font-weight: bold;">
+                                    Ratings: {{ saved_place.place.Ratings }}
+                                </span>
+                            </p>
+                            <p>{{ saved_place.place.Place_desc }}</p>
+                            <hr>
+                            <form action="{{ url_for('delete_place') }}" method="post">
+                                <input type="hidden" name="place_name" value="{{ saved_place.place.Place }}">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if loop.index % 3 == 0 %}
+            <div class="clearfix"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    
+</body>
+</html>

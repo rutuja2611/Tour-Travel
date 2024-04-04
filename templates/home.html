@@ -131,8 +131,10 @@
 <body>
 
     <header>
-        <a href="#" class="logo">Smart Travel</a>
-        <ul class="navbar">
+        <!-- <a href="#" class="logo">Smart Travel</a> -->
+        <ul class="nav">
+          <li><a href="/save">Saved Items</a></li>
+          <li><a href="/travel">Travel</a></li>
             <li> <a href="{{ url_for('index') }}"> Personalized Recommendation</a> </li>
             <li> <a href="{{ url_for('map') }}" > Map</a> </li>
             <li> <a href="{{ url_for('logout') }}">Log Out</a> </li>
@@ -156,10 +158,7 @@
         </div>
     </section>
 
-
-
-
-    
+   
 
     <div class="container" id="fixing-width">
 
@@ -192,6 +191,15 @@
                 <hr>
                 <button type="button" class="btn btn-info"><a href="{{ url_for('hotel_reviews', hotel_name=hotel['Hotel_Name']) }}">Reviews</a></button>
                 <button type="button" class="btn btn-info">Directions</button>
+                <hr>
+                <hr>
+              <form action="/save_hotel" method="post">
+                  <input type="hidden" name="hotel_name" value="{{ hotel['Hotel_Name'] }}">
+                  <button type="submit" class="btn btn-info">Save</button>
+              </form>
+              
+
+              
               </div>
             </div>
           </div>
@@ -201,9 +209,6 @@
         {% endif %} {% endfor %}
       </div>
     </div>
-
-
-
 
 
     <div class="container">
@@ -243,8 +248,13 @@
 
             <button type="button" class="btn btn-info"><a href="{{ url_for('place_reviews', place_name= place.Place) }}">Reviews</a></button>
             <button type="button" class="btn btn-info">Directions</button>
-
-
+            <hr><hr>
+            <form action="/save_place" method="post">
+              <input type="hidden" name="place" value="{{ place.Place }}">
+              <button type="submit" class="btn btn-info">Save</button>
+          </form>
+            
+            <hr>
 
 
           </div>
@@ -255,38 +265,6 @@
         {% endif %} {% endfor %} 
       </div>
     </div>
-
-    
-
-
-
-<!-- 
-
-    <h1>Hotel Recommendation using Hybrid Recommendation</h1>
-<ul>
-  {% for hotel in unique_top_recommendations %}
-    <li>{{ hotel }}</li>
-  {% endfor %}
-</ul>
-
-
-
-    <h1>Attrcation Recommendation using Hybrid Recommendation</h1>
-<ul>
-  {% for hotel in unique_top_recommendations_att %}
-    <li>{{ hotel }}</li>
-  {% endfor %}
-</ul> -->
-
-
-
-
-
-
-
-
-
-
 
 
 

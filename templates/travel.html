@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Recommendation</title>
+</head>
+<body>
+    <h1>Travel Recommendation</h1>
+    <form action="/recommendtravel" method="post">
+        <label for="departure_city">Departure City:</label>
+        <input type="text" id="departure_city" name="departure_city" required><br><br>
+        
+        <label for="destination_city">Destination City:</label>
+        <input type="text" id="destination_city" name="destination_city" required><br><br>
+        
+        <button type="submit">Get Recommendations</button>
+    </form>
+
+    {% if recommendations %}
+        <h2>DepartureCity: {{ departure_city }}</h2>
+        <h2>DestinationCity: {{ destination_city }}</h2>
+        {% for recommendation in recommendations %}
+            <h2>TravelMode: {{ recommendation['TravelMode'] }}</h2>
+            <table border="1">
+                <tr>
+                    <th>Operators</th>
+                    <th>Hours</th>
+                    <th>Price</th>
+                </tr>
+                {% for operator in recommendation['Recommendations'] %}
+                    <tr>
+                        <td>{{ operator['Operator'] }}</td>
+                        <td>{{ operator['Hours'] }}</td>
+                        <td>{{ operator['Price'] }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>

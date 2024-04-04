@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, session, url_for
+from flask import Flask, render_template, redirect, request, session, url_for,flash
 import pandas as pd
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -16,6 +16,10 @@ from sklearn.preprocessing import OneHotEncoder
 from collections import defaultdict
 from flask import session
 from itertools import chain
+import pandas as pd
+import nltk
+from nltk.stem.porter import PorterStemmer
+ps = PorterStemmer()
 
 
 
@@ -149,6 +153,8 @@ class PlaceReview(db.Model):
 
     user = db.relationship('User', backref=db.backref('place_reviews', lazy=True))
 
+
+    
 # Add this to your existing code
 @app.route('/place/<string:place_name>/reviews', methods=['GET', 'POST'])
 def place_reviews(place_name):
@@ -426,6 +432,196 @@ def home():
 
 
     return render_template('home.html',hotels=hotels,attractions=attractions,unique_top_recommendations=unique_top_recommendations,unique_top_recommendations_att=unique_top_recommendations_att, recommendations=recommendations,top_recommendations=top_recommendations,last_rated_attraction=last_rated_attraction,recommend_att=recommend_att,top_recommendations_att=top_recommendations_att,hotel_info_list=hotel_info_list,attraction_info=attraction_info)
+
+from flask import Flask, render_template, request
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import pairwise_distances
+
+data = pd.read_csv('T.csv')
+data.dropna(inplace=True)
+t_vec = TfidfVectorizer()
+t_max = t_vec.fit_transform(data['Operators'])
+cosine_sim_op = cosine_similarity(t_max, t_max)
+
+# Define collaborative filtering similarity scores
+user_item_matrix = data.pivot_table(index='DepartureCity', columns='DestitionCity', values='Price')
+user_item_matrix.fillna(0, inplace=True)
+pairwise_distances_matrix = pairwise_distances(user_item_matrix.values, metric='cosine')
+collab_cosine_sim = 1 - pairwise_distances_matrix
+
+# Define hybrid recommendation function
+def hybrid_recommendation(departure_city, destination_city):
+    idx = data[data['DestitionCity'] == destination_city].index[0]
+    cb_sim_scores = list(enumerate(cosine_sim_op[idx]))
+    cb_sim_scores = sorted(cb_sim_scores, key=lambda x: x[1], reverse=True)
+    cb_sim_scores = cb_sim_scores[1:100]
+    cb_dest_indices = [i[0] for i in cb_sim_scores]
+    collab_sim_scores = collab_cosine_sim[idx]
+    collab_dest_indices = collab_sim_scores.argsort()[1:6]
+    hybrid_dest_indices = set(cb_dest_indices).union(set(collab_dest_indices))
+    recommended_des = data.iloc[list(hybrid_dest_indices)]
+    recommended_des = recommended_des[(recommended_des['DepartureCity'] == departure_city) & (recommended_des['DestitionCity'] == destination_city)]
+    return recommended_des
+
+@app.route('/recommendtravel', methods=['POST'])
+def recommend_travel():
+    departure_city = request.form['departure_city']
+    destination_city = request.form['destination_city']
+    recommendations = hybrid_recommendation(departure_city, destination_city)
+    # Prepare recommendations in the desired format
+    formatted_recommendations = []
+    for mode, group in recommendations.groupby('TravelMode'):
+        unique_operators = set()
+        recommendations_list = []
+        for _, row in group.iterrows():
+            if row['Operators'] not in unique_operators:
+                unique_operators.add(row['Operators'])
+                recommendations_list.append({
+                    'Operator': row['Operators'],
+                    'Hours': row['Hours'],
+                    'Price': row['Price']
+                })
+        formatted_recommendations.append({
+            'TravelMode': mode,
+            'Recommendations': recommendations_list
+        })
+
+    return render_template('travel.html', departure_city=departure_city, destination_city=destination_city, recommendations=formatted_recommendations)
+
+import pandas as pd
+
+@app.route('/save')
+def save():
+    saved_hotels = HotelSaved.query.filter_by(user_id = session.get('user_id')).all()
+    saved_place = PlaceSaved.query.filter_by(user_id = session.get('user_id')).all()
+
+    # Load hotel information from CSV file using pandas
+    hotel_df = pd.read_csv('hot.csv')
+    place_df = pd.read_csv('att.csv')
+
+    # Merge saved hotel names with additional information
+    saved_hotel_info = []
+    saved_place_info = []
+    for saved_hotel in saved_hotels:
+        hotel_name = saved_hotel.hotel_name
+        hotel_info = hotel_df[hotel_df['Hotel_Name'] == hotel_name].to_dict(orient='records')
+        if hotel_info:
+            saved_hotel_info.append({
+                'hotel': hotel_info[0]
+            })
+
+    for saved_place in saved_place:
+        place_name = saved_place.place_name
+        place_info = place_df[place_df['Place'] == place_name].to_dict(orient='records')
+        if place_info:
+            saved_place_info.append({
+                'place': place_info[0]
+            })            
+    return render_template('save.html', saved_hotels=saved_hotel_info,saved_place=saved_place_info)
+
+
+from flask import request, jsonify
+# from app import db, HotelSaved
+
+class HotelSaved(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    hotel_name = db.Column(db.String(100), nullable=False)
+    # user = db.relationship('User', backref=db.backref('place_reviews', lazy=True))
+
+@app.route('/save_hotel', methods=['POST'])
+def save_hotel():
+    # hotel_name = request.json.get('hotel_name')
+    hotel_name = request.form.get('hotel_name')  # Assuming the hotel name is sent via a form
+    print(hotel_name)
+
+    user_id = session.get('user_id')
+
+    # Check if the hotel is already saved by the user
+    existing_saved_hotel = HotelSaved.query.filter_by(user_id=user_id, hotel_name=hotel_name).first()
+    if existing_saved_hotel:
+        flash('This hotel is already saved')
+    else:
+        saved_hotel = HotelSaved(user_id=user_id, hotel_name=hotel_name)
+        db.session.add(saved_hotel)
+        db.session.commit()
+        flash('Hotel saved successfully')
+
+    # Redirect back to the same page
+    return redirect(url_for('home'))
+
+@app.route('/delete_hotel', methods=['POST'])
+def delete_hotel():
+    hotel_name = request.form.get('hotel_name')
+    user_id = session.get('user_id')
+
+    if user_id is None:
+        flash('User not logged in', 'error')
+        return redirect(url_for('save'))
+
+    # Check if the hotel exists in the database
+    saved_hotel = HotelSaved.query.filter_by(user_id=user_id, hotel_name=hotel_name).first()
+    if saved_hotel is None:
+        flash('Hotel not found', 'error')
+    else:
+        # Delete the hotel from the database
+        db.session.delete(saved_hotel)
+        db.session.commit()
+        flash('Hotel deleted successfully', 'success')
+
+    return redirect(url_for('save'))
+
+
+# attrcations
+
+class PlaceSaved(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    place_name = db.Column(db.String(100), nullable=False)
+    # user = db.relationship('User', backref=db.backref('place_reviews', lazy=True))
+
+@app.route('/save_place', methods=['POST'])
+def save_place():
+    place_name = request.form.get('place')  # Assuming the hotel name is sent via a form
+    print(place_name)
+
+    user_id = session.get('user_id')
+
+    # Check if the hotel is already saved by the user
+    existing_saved_place = PlaceSaved.query.filter_by(user_id=user_id, place_name=place_name).first()
+    if existing_saved_place:
+        flash('This place is already saved')
+    else:
+        saved_place = PlaceSaved(user_id=user_id, place_name=place_name)
+        db.session.add(saved_place)
+        db.session.commit()
+        flash('Hotel saved successfully')
+
+    # Redirect back to the same page
+    return redirect(url_for('home'))
+
+@app.route('/delete_place', methods=['POST'])
+def delete_place():
+    place_name = request.form.get('place_name')
+    user_id = session.get('user_id')
+
+    if user_id is None:
+        flash('User not logged in', 'error')
+        return redirect(url_for('save'))
+
+    # Check if the hotel exists in the database
+    saved_place = PlaceSaved.query.filter_by(user_id=user_id, place_name=place_name).first()
+    if saved_place is None:
+        flash('Place not found', 'error')
+    else:
+        # Delete the hotel from the database
+        db.session.delete(saved_place)
+        db.session.commit()
+        flash('Place deleted successfully', 'success')
+
+    return redirect(url_for('save'))
 
 @app.route('/beaches')
 def beaches():
@@ -822,9 +1018,7 @@ attractions['tags'] = attractions['City'] + ' ' + attractions['Place_desc']
 attractions['tags'] = attractions['tags'].apply(lambda x: x.lower())
 
 # Stemming
-import nltk
-from nltk.stem.porter import PorterStemmer
-ps = PorterStemmer()
+
 def stem(text):
     stemmed_words = [ps.stem(word) for word in text.split()]
     return " ".join(stemmed_words)
@@ -847,8 +1041,9 @@ def recommend_attraction(attraction):
 
 # collaborative filtering
 
-import pandas as pd
-from app import app, db, User, Review, PlaceReview
+# import pandas as pd
+from app import app, db, User, Review, PlaceReview, HotelSaved
+
 
 # creating the dataset for hotels
 
@@ -914,6 +1109,12 @@ with app.app_context():
 
 # Save ratings to at.csv
 ratings_att_df.to_csv('at.csv')
+
+
+
+
+
+
 
 
 

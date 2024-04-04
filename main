@@ -1,0 +1,209 @@
+# collaborative and content based filtering
+# @app.route('/home_recommend')
+# def home_recommend():
+#     # Data Cleaning and Preprocessing for Hotel Data
+#     # Drop rows with missing values in any column except 'Image'
+#     hotel_df_cleaned = hotel_df.dropna(subset=[col for col in hotel_df.columns if col != 'Image'])
+#     hotel_df_cleaned['Hotel_Rating'] = hotel_df_cleaned['Hotel_Rating'].astype(float)
+
+#     # Data Cleaning and Preprocessing for Attraction Data
+#     # Drop rows with missing values in any column except 'Image' for places_df
+#     places_df_cleaned = places_df.dropna(subset=[col for col in places_df.columns if col != 'Images'])
+#     places_df_cleaned['Ratings'] = places_df_cleaned['Ratings'].astype(float)
+
+#     # Convert city names to lowercase
+#     hotel_df_cleaned['City'] = hotel_df_cleaned['City'].str.lower()
+#     places_df_cleaned['City'] = places_df_cleaned['City'].str.lower()
+
+#     # Feature Encoding for Hotel Data (One-Hot Encoding for City)
+#     hotel_df_encoded = pd.get_dummies(hotel_df_cleaned, columns=['City'])
+
+#     # Feature Encoding for Attraction Data (One-Hot Encoding for City)
+#     places_df_encoded = pd.get_dummies(places_df_cleaned, columns=['City'])
+
+#     # Min-Max Scaling for Hotel Price
+#     scaler = MinMaxScaler()
+#     hotel_df_encoded['Hotel_Price'] = scaler.fit_transform(hotel_df_encoded[['Hotel_Price']])
+
+#      # Feature Extraction for Hotel features
+#     hotel_features = hotel_df_cleaned[['Feature_1', 'Feature_2', 'Feature_3', 'Feature_4', 'Feature_5', 'Feature_6', 'Feature_7', 'Feature_8', 'Feature_9']]
+
+#     # this consider only features
+#     hotel_feature_vector = pd.get_dummies(hotel_features)
+
+#     # Feature Extraction for Attraction description
+#     attraction_feature_vector = pd.get_dummies(places_df_cleaned['Place_desc'])
+
+#     user_id = int(session.get('user_id'))
+#     user = db.session.query(User).get(user_id)
+#     age = user.age
+#     gender = user.gender
+
+#     # Retrieve all search preferences of the user from the database
+#     user_queries = None
+#     user_queries = SearchQuery.query.filter_by(user_id = session.get('user_id')).all()   
+
+#     # Proceed if user_queries exist
+#     if user_queries:
+#         # Initialize lists to store search preferences
+#         states = []
+#         cities = []
+#         min_budgets = []
+#         required_facilities = []
+
+#         # Extract search preferences from user_queries
+#         for query in user_queries:
+#             states.append(query.state)
+#             cities.append(query.city)
+#             min_budgets.append(query.min_budget)
+#             required_facilities.append(query.required_facility)
+
+
+#     # Retrieve user ratings for cities  
+#     city_ratings = CityReview.query.filter_by(user_id=user_id).with_entities(CityReview.city, CityReview.rating).all()
+
+
+#     # Retrieve user ratings for hotels
+#     hotel_ratings = Review.query.filter_by(user_id=user_id).with_entities(Review.hotel_name, Review.rating).all()
+
+#     # Retrieve user ratings for attractions
+#     attraction_ratings = PlaceReview.query.filter_by(user_id=user_id).with_entities(PlaceReview.place_name, PlaceReview.rating).all()        
+
+#     # Proceed with creating user feature vector using demographic information and all search preferences
+#     user_feature_vector = create_user_feature_vector(age, gender, states, cities, min_budgets, required_facilities, city_ratings, hotel_ratings, attraction_ratings)
+
+
+
+#     #combine all features of hotel-> final hotel feature vector
+#     city_columns = hotel_df_encoded.filter(like='City_').columns
+#     hotel_features_combined = pd.concat([hotel_df_encoded[city_columns], hotel_df_encoded[['Hotel_Rating', 'Hotel_Price']], hotel_feature_vector], axis=1)
+#       # did nto understand below step
+#     hotel_features_combined.fillna(hotel_features_combined.mean(), inplace=True)
+#     print("This is for hotel")
+#     print(type(hotel_features_combined))
+
+
+#     #combine all the features of attractions-->final attraction feature vector
+#     city_columns = places_df_encoded.filter(like='City_').columns
+#     attraction_features_combined = pd.concat([places_df_encoded[city_columns], places_df_encoded[['Ratings']], attraction_feature_vector], axis=1)
+#     # did nto understand below step
+#     attraction_features_combined.fillna(attraction_features_combined.mean(), inplace=True)
+
+
+
+#     #content based filtering--> calculating similarities betwwen item-item and user-item to provide recommendations
+
+#     #similarity matrix item-item similarity
+#     hotel_similarity_matrix,attraction_similarity_matrix = calculate_item_item_similarity(hotel_features_combined,attraction_features_combined)
+
+#     # user-item similairty
+#     user_item_hotel_similarity = calculate_user_item_hotel_similarity(user_feature_vector,hotel_df_encoded, hotel_features_combined)
+#     user_attraction_similarity = calculate_user_item_attractions_similarity(user_feature_vector, places_df_encoded, attraction_features_combined)
+
+#     # Collaborative Filtering
+#     hotel_cf_recommendations = collaborative_filtering_hotel_recommendation(user_id, hotel_df_encoded, hotel_similarity_matrix)
+#     attraction_cf_recommendations = collaborative_filtering_attractions_recommendation(user_id, places_df_encoded, attraction_similarity_matrix)
+    
+
+#     # Render the home.html template with the recommendation results
+#     return render_template('home.html', hotel_recommendations=hotel_cf_recommendations, attraction_recommendations=attraction_cf_recommendations)
+
+# # Item-Item Similarity Calculation
+# def calculate_item_item_similarity(hotel_features_combined,attraction_features_combined):
+
+#     # Calculate item-item similarity matrix for hotels
+#     hotel_similarity_matrix = cosine_similarity(hotel_features_combined)    
+#     # Calculate item-item similarity matrix for attractions
+#     attraction_similarity_matrix = cosine_similarity(attraction_features_combined)
+    
+#     return hotel_similarity_matrix, attraction_similarity_matrix
+
+# def calculate_user_item_hotel_similarity(user_feature_vector,hotel_df_encoded, hotel_features_combined):
+
+#     # Calculate cosine similarity between user and each hotel
+#     # user_vector = np.array(list(user_feature_vector.values())).reshape(1, -1)
+#     user_vector = np.array([v for v in user_feature_vector.values()]).reshape(1, -1)
+#     hotel_vectors = np.array(hotel_features_combined.values)
+#     similarities = cosine_similarity(user_vector, hotel_vectors)
+
+#     # Create a dictionary to store hotel IDs and their corresponding similarity scores
+#     hotel_similarity = {hotel_id: similarity[0] for hotel_id, similarity in zip(hotel_df_encoded.index, similarities)}
+
+#     return hotel_similarity
+
+
+
+
+# def calculate_user_item_attractions_similarity(user_feature_vector, places_df_encoded, attraction_features_combined):
+#     # Calculate cosine similarity between user and each attraction
+#     # user_vector = np.array(list(user_feature_vector.values())).reshape(1, -1)
+#     user_vector = np.array([v for v in user_feature_vector.values()]).reshape(1, -1)
+#     attraction_vectors = np.array(attraction_features_combined.values)
+#     similarities = cosine_similarity(user_vector, attraction_vectors)
+
+#     # Create a dictionary to store attraction IDs and their corresponding similarity scores
+#     attraction_similarity = {attraction_id: similarity[0] for attraction_id, similarity in zip(places_df_encoded.index, similarities)}
+
+#     return attraction_similarity
+
+
+# def collaborative_filtering_hotel_recommendation(user_id, df_encoded, similarity_matrix):
+#     # Get user's ratings
+#     user_ratings = Review.query.filter_by(user_id=user_id).all()
+
+#     # Predict ratings for unrated items
+#     predicted_ratings = {}
+#     for item_id in df_encoded.index:
+#         if item_id not in [rating.item_id for rating in user_ratings]:
+#             similarity_scores = similarity_matrix[item_id]
+#             rated_items = [rating.item_id for rating in user_ratings]
+#             weighted_sum = 0
+#             sum_of_weights = 0
+#             for i in range(len(similarity_scores)):
+#                 if df_encoded.index[i] in rated_items:
+#                     weight = similarity_scores[i]
+#                     rating = Review.query.filter_by(user_id=user_id, item_id=df_encoded.index[i]).first().rating
+#                     weighted_sum += weight * rating
+#                     sum_of_weights += abs(weight)
+#             if sum_of_weights > 0:
+#                 predicted_ratings[item_id] = weighted_sum / sum_of_weights
+
+#     # Sort predicted ratings in descending order
+#     sorted_ratings = sorted(predicted_ratings.items(), key=lambda x: x[1], reverse=True)
+
+#     # Return top recommendations
+#     top_recommendations = sorted_ratings[:10]  # Change 10 to the number of recommendations needed
+#     print("Top hotels are:")
+#     print(top_recommendations)
+#     return top_recommendations
+
+
+# def collaborative_filtering_attractions_recommendation(user_id, df_encoded, similarity_matrix):
+#     # Get user's ratings
+#     user_ratings = PlaceReview.query.filter_by(user_id=user_id).all()
+
+#     # Predict ratings for unrated items
+#     predicted_ratings = {}
+#     for item_id in df_encoded.index:
+#         if item_id not in [rating.item_id for rating in user_ratings]:
+#             similarity_scores = similarity_matrix[item_id]
+#             rated_items = [rating.item_id for rating in user_ratings]
+#             weighted_sum = 0
+#             sum_of_weights = 0
+#             for i in range(len(similarity_scores)):
+#                 if df_encoded.index[i] in rated_items:
+#                     weight = similarity_scores[i]
+#                     rating = PlaceReview.query.filter_by(user_id=user_id, item_id=df_encoded.index[i]).first().rating
+#                     weighted_sum += weight * rating
+#                     sum_of_weights += abs(weight)
+#             if sum_of_weights > 0:
+#                 predicted_ratings[item_id] = weighted_sum / sum_of_weights
+
+#     # Sort predicted ratings in descending order
+#     sorted_ratings = sorted(predicted_ratings.items(), key=lambda x: x[1], reverse=True)
+
+#     # Return top recommendations
+#     top_recommendations = sorted_ratings[:10]  # Change 10 to the number of recommendations needed
+#     print("Top attractions are:")
+#     print(top_recommendations)
+#     return top_recommendations

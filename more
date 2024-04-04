@@ -1,0 +1,273 @@
+# app = Flask(__name__)
+# app.secret_key = 'your_secret_key'  # Change this to a secure secret key
+
+# # Load user data from Excel sheet
+# user_df = pd.DataFrame(columns=['username', 'email', 'country', 'city', 'area_code', 'password'])
+
+# # Register page
+# @app.route('/register', methods=['GET', 'POST'])
+# def register():
+#     global user_df  # Declare user_df as a global variable
+
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         email = request.form['email']
+#         country = request.form['country']
+#         city = request.form['city']
+#         area_code = request.form['area_code']
+#         password = request.form['password']
+#         confirm_password = request.form['confirm_password']
+
+#         # Check if passwords match
+#         if password != confirm_password:
+#             return render_template('register.html', error='Passwords do not match')
+
+#         # Check if username is unique
+#         if not user_df.empty and username in user_df['username'].values:
+#             return render_template('register.html', error='Username already exists')
+
+#         # Hash the password before storing
+#         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+#         # Add user to DataFrame
+#         new_user = {'username': username, 'email': email, 'country': country, 'city': city, 'area_code': area_code, 'password': hashed_password}
+#         user_df = user_df.append(new_user, ignore_index=True)
+#         user_df.to_excel('users.csv', index=False)
+
+#         return redirect(url_for('login'))
+
+#     return render_template('register.html')
+
+# # Login page
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+
+#         # Check if username exists
+#         if username not in user_df['username'].values:
+#             return render_template('login.html', error='Invalid username or password')
+
+#         # Retrieve hashed password from DataFrame
+#         stored_password = user_df.loc[user_df['username'] == username, 'password'].iloc[0]
+
+#         # Check if the password is correct
+#         if not check_password_hash(stored_password, password):
+#             return render_template('login.html', error='Invalid username or password')
+
+#         # Set the user session and redirect to home page
+#         session['username'] = username
+#         return redirect(url_for('home'))
+
+#     return render_template('login.html')
+
+# # Home page
+# @app.route('/home')
+# def home():
+#     if 'username' in session:
+#         return render_template('home.html')
+#     else:
+#         return redirect(url_for('login'))
+
+# # Index page
+# # @app.route('/')
+# # def index():
+# #     return render_template('index.html')
+
+# # Recommendation page
+# @app.route('/recommend')
+# def recommend():
+#     return render_template('recommend.html')
+
+# # Logout
+# @app.route('/logout')
+# def logout():
+    # session.pop('username', None)
+    # return redirect(url_for('login'))
+
+
+
+
+
+
+
+
+# clickcount
+
+
+# database for click-->WORKS-->MAYBE NEED TO DELETE
+# class Clickcount(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+#     user = db.relationship('User', backref=db.backref('clickcount', uselist=False))
+#     numb = db.Column(db.Integer, default=0)
+
+
+          # Retrieve the user
+        #   user = User.query.filter_by(id=session['user_id']).first()
+        #   if user:
+        #     click_count = Clickcount.query.filter_by(user_id=user.id).first()
+        #     if click_count:
+        #         # If numb is 0, increase the count in City.csv
+        #         if click_count.numb == 0:
+
+        #             # Increment the Count column for the searched city
+        #             searched_city = city_info_df["City"].str.lower() == city
+        #             #   city_info_df.loc[searched_city, "Count"] += 1
+        #             city_info_df.loc[searched_city, "Count"] = city_info_df.loc[searched_city, "Count"].apply(lambda x: 1 if pd.isna(x) else x + 1)
+        #             # Print the DataFrame before and after the modification
+        #             print("Before modification:")
+        #             print(city_info_df[searched_city])
+
+        #             # Save the updated DataFrame back to City.csv
+        #             city_info_df.to_csv("City.csv", index=False)
+        #             print("After saving:")
+        #             print(pd.read_csv("City.csv")[searched_city])
+        #             # Print the current value of the Count column for the searched city again
+        #             print(f"Updated Count for {city}: {pd.read_csv('City.csv').loc[searched_city, 'Count'].values}")
+
+        #             # Update numb to 1
+        #             click_count.numb = 1
+        #             db.session.commit()
+        #         else:
+        #             print("Count already updated for this user.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# code using data.csv in app.py
+# ****************************************
+
+# # Load the dataset
+# df = pd.read_csv("data.csv")
+
+# @app.route("/index", methods=["GET", "POST"])
+# def index():
+#     if request.method == "POST":
+#         city = request.form.get("city")
+#         cuisines = request.form.get("cuisines")
+        
+#         # Retrieve min_rating and handle the case when it's not provided
+#         try:
+#             min_rating = float(request.form.get("min_rating"))
+#         except (ValueError, TypeError):
+#             # Set a default value if min_rating is not provided or invalid
+#             min_rating = 1.0
+
+#         # Filter the dataset based on user input
+#         filtered_df = filter_data(city, cuisines, min_rating)
+
+#         # Pass the filtered data to the result page
+#         return render_template("result.html", data=filtered_df.to_dict(orient="records"))
+
+#     return render_template("index.html")
+
+
+# def filter_data(city, cuisines, min_rating):
+#     # Remove rows with any empty values
+#     df_cleaned = df.dropna(subset=['name', 'address', 'Phone', 'cuisines', 'rating'])
+
+#     # Filter by city in the address
+#     filtered_df = df_cleaned[df_cleaned['address'].str.contains(city, case=False)]
+
+#     # Filter by cuisines
+#     if cuisines:
+#         filtered_df = filtered_df[filtered_df['cuisines'].str.contains(cuisines, case=False)]
+
+#     # Filter by minimum rating
+#     filtered_df = filtered_df[filtered_df['rating'] >= min_rating]    
+
+#     # Sort by rating in descending order
+#     filtered_df = filtered_df.sort_values(by='rating', ascending=False)
+
+#     return filtered_df
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# arya friends code
+
+
+
+
+# def calculate_user_item_hotel_similarity(user_feature_vector, hotel_df_encoded, hotel_features_combined):
+
+#     # Convert user_feature_vector to numpy array
+#     user_vector = np.array([v for v in user_feature_vector.values()]).reshape(1, -1)
+    
+#     # Convert hotel_features_combined to numpy array
+#     hotel_vectors = np.array([v for v in hotel_features_combined.values()])
+
+#     # Check if shapes are compatible
+#     if user_vector.shape[1] != hotel_vectors.shape[1]:
+#         raise ValueError("User feature vector and hotel feature vectors have incompatible shapes.")
+
+#     # Calculate cosine similarity between user and each hotel
+#     similarities = cosine_similarity(user_vector, hotel_vectors)
+
+#     # Create a dictionary to store hotel IDs and their corresponding similarity scores
+#     hotel_similarity = {hotel_id: similarity[0] for hotel_id, similarity in zip(hotel_df_encoded.index, similarities)}
+
+#     return hotel_similarity
+
+
+
+
+# def calculate_user_item_hotel_similarity(user_feature_vector, hotel_df_encoded, hotel_features_combined):
+
+#     # Convert user_feature_vector to numpy array
+#     print(user_feature_vector)
+#     print(hotel_features_combined)
+#     user_vector = np.array(list(user_feature_vector.values()))
+    
+#     # Convert hotel_features_combined DataFrame to numpy array
+#     hotel_vectors = hotel_features_combined.values
+
+#     # Check the shapes of user_vector and hotel_vectors
+#     print("User vector shape:", user_vector.shape)
+#     print("Hotel vectors shape:", hotel_vectors.shape)
+
+#     # Calculate cosine similarity between user and each hotel
+#     similarities = cosine_similarity(user_vector, hotel_vectors)
+
+#     # Create a dictionary to store hotel IDs and their corresponding similarity scores
+#     hotel_similarity = {hotel_id: similarity[0] for hotel_id, similarity in zip(hotel_df_encoded.index, similarities)}
+
+#     return hotel_similarity
